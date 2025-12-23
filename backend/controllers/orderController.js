@@ -2,8 +2,8 @@ import Joi from 'joi';
 import axios from 'axios';
 import Order from '../models/Order.js';
 
-// --- CONFIG ---
-const DISCORD_URL = process.env.DISCORD_WEBHOOK_URL;
+// HINWEIS: Wir lesen DISCORD_URL nicht hier oben, sondern erst unten in der Funktion!
+// Sonst ist sie beim Server-Start noch leer.
 
 // --- VALIDIERUNG (JOI) ---
 const orderSchema = Joi.object({
@@ -21,29 +21,25 @@ const orderSchema = Joi.object({
 
   provider: Joi.string().allow('').optional(),
   
-  // Items validieren
   items: Joi.array().items(
     Joi.object({
       id: Joi.alternatives().try(Joi.string(), Joi.number()).required(),
       name: Joi.string().required()
     }).unknown(true)
   ).min(1).required()
-}).unknown(true); // Erlaubt zusätzliche Felder, falls das Frontend mehr sendet
-
+}).unknown(true);
 
 // --- MAIN CONTROLLER ---
 export const createOrder = async (req, res) => {
   try {
     console.log("📥 Neue Bestellung empfangen:", req.body.paymentMethod);
 
-    // 1. Validieren
     const validData = await orderSchema.validateAsync(req.body, { stripUnknown: true });
+    
+    // Preisberechnung
+    const calculatedTotal = validData.items.length * 0.01; 
 
-    // 2. Preis berechnen (Sicherheits-Check: Frontend-Preise werden ignoriert)
-    // HINWEIS: Hier nutzen wir einen Test-Preis. Später würdest du die Preise aus der DB holen.
-    const calculatedTotal = validData.items.length * 0.01; // 1 Cent pro Item zum Testen
-
-    // 3. In Datenbank speichern
+    // DB Save
     const newOrder = new Order({
       ...validData,
       totalAmount: calculatedTotal,
@@ -54,10 +50,9 @@ export const createOrder = async (req, res) => {
     const savedOrder = await newOrder.save();
     console.log("✅ Bestellung in DB gespeichert:", savedOrder._id);
 
-    // 4. An Discord senden (Feuer & Vergessen)
+    // Discord Trigger
     await sendToDiscord(savedOrder);
 
-    // 5. Erfolg ans Frontend melden
     res.status(201).json({ 
       success: true, 
       orderId: savedOrder._id,
@@ -73,21 +68,24 @@ export const createOrder = async (req, res) => {
   }
 };
 
-
 // --- DISCORD HELPER FUNCTION ---
 const sendToDiscord = async (order) => {
-  if (!DISCORD_URL) {
-    console.warn("⚠️ Keine DISCORD_WEBHOOK_URL in .env gefunden!");
+  // FIX: Variable erst HIER lesen, wenn dotenv sicher geladen ist
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    console.error("⚠️ FEHLER: DISCORD_WEBHOOK_URL ist nicht gesetzt oder konnte nicht gelesen werden!");
     return;
   }
 
-  // Design Logik: Barzahlung = Orange, Versand = Grün
+  // Debugging: Zeige die ersten 30 Zeichen der URL an, um zu prüfen ob sie stimmt
+  console.log("Versuche Discord Senden an:", webhookUrl.substring(0, 30) + "...");
+
   const isOnline = order.paymentMethod === 'ONLINE';
-  const color = isOnline ? 5763719 : 15105570; // Grün (#57F287) oder Orange (#E67E22)
+  const color = isOnline ? 5763719 : 15105570; // Grün oder Orange
   const title = isOnline ? "📦 Neue Bestellung (Versand)" : "🤝 Neue Reservierung (Barzahlung)";
   
-  // Items schön formatieren
-  // Wir zählen gleiche Items zusammen (z.B. "2x Ledger Nano X")
+  // Item Liste formatieren
   const itemCounts = order.items.reduce((acc, item) => {
     acc[item.name] = (acc[item.name] || 0) + 1;
     return acc;
@@ -97,7 +95,6 @@ const sendToDiscord = async (order) => {
     .map(([name, count]) => `• ${count}x **${name}**`)
     .join('\n');
 
-  // Embed zusammenbauen
   const embed = {
     title: title,
     color: color,
@@ -108,8 +105,8 @@ const sendToDiscord = async (order) => {
         inline: true
       },
       {
-        name: "💰 Summe & Zahlung",
-        value: `**${order.totalAmount.toFixed(2)}€**\nVia: ${order.provider || 'Bar vor Ort'}`,
+        name: "💰 Summe",
+        value: `**${order.totalAmount.toFixed(2)}€**\n${order.provider || 'Bar vor Ort'}`,
         inline: true
       },
       {
@@ -119,19 +116,20 @@ const sendToDiscord = async (order) => {
       },
       {
         name: "🛒 Warenkorb",
-        value: itemsList,
+        value: itemsList || "Keine Items",
         inline: false
       }
     ],
     footer: {
-      text: `Order ID: ${order._id} | ${new Date().toLocaleTimeString('de-DE')} Uhr`
-    }
+      text: `Order ID: ${order._id}`
+    },
+    timestamp: new Date().toISOString()
   };
 
   try {
-    await axios.post(DISCORD_URL, { embeds: [embed] });
-    console.log("🚀 Discord Benachrichtigung gesendet!");
+    await axios.post(webhookUrl, { embeds: [embed] });
+    console.log("🚀 Discord Benachrichtigung erfolgreich gesendet!");
   } catch (err) {
-    console.error('❌ Discord Senden fehlgeschlagen:', err.message);
+    console.error('❌ Discord API Error:', err.response ? err.response.data : err.message);
   }
 };
