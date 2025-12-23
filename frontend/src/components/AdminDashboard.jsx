@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, MessageSquare, Check, Truck, XCircle, Clock } from 'lucide-react';
+import { Package, MessageSquare, Check, Truck, XCircle, Trash2, Mail, Lock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [password, setPassword] = useState('');
   const [isAuth, setIsAuth] = useState(false);
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' or 'messages'
+  const [activeTab, setActiveTab] = useState('orders'); 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Login Funktion
   const handleLogin = (e) => {
     e.preventDefault();
-    // Wir speichern das Passwort temporär im State für Requests
     fetchData(password);
   };
 
@@ -20,129 +18,151 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const endpoint = activeTab === 'orders' ? '/api/admin/orders' : '/api/admin/messages';
-      // Wir schicken das Passwort im Header mit!
       const res = await axios.get(`http://localhost:5000${endpoint}`, {
         headers: { 'x-admin-secret': pwd }
       });
       setData(res.data);
-      setIsAuth(true); // Wenn kein Fehler kam, war Passwort richtig
+      setIsAuth(true);
     } catch (err) {
-      alert("Falsches Passwort oder Server-Fehler!");
+      alert("Zugriff verweigert! Passwort prüfen.");
       setIsAuth(false);
     }
     setLoading(false);
   };
 
-  // Status ändern Funktion
+  // --- ACTIONS FÜR ORDERS ---
   const updateStatus = async (id, newStatus) => {
     try {
       await axios.put(`http://localhost:5000/api/admin/orders/${id}`, 
         { status: newStatus },
         { headers: { 'x-admin-secret': password } }
       );
-      // Liste neu laden
-      fetchData(password);
+      fetchData(password); // Liste aktualisieren
     } catch (err) {
-      alert("Fehler beim Update");
+      alert("Fehler beim Aktualisieren des Status.");
     }
   };
 
-  // Tab Wechsel
+  // --- ACTIONS FÜR SUPPORT ---
+  const deleteMsg = async (id) => {
+    if (!window.confirm("Nachricht unwiderruflich löschen?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/messages/${id}`, {
+        headers: { 'x-admin-secret': password }
+      });
+      fetchData(password);
+    } catch (err) {
+      alert("Fehler beim Löschen der Nachricht.");
+    }
+  };
+
   useEffect(() => {
     if (isAuth) fetchData(password);
   }, [activeTab]);
 
-  // --- LOGIN VIEW ---
   if (!isAuth) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F7]">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
-          <h1 className="text-2xl font-black mb-6">ADMIN ACCESS</h1>
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F7] p-4">
+        <form onSubmit={handleLogin} className="bg-white p-10 rounded-[32px] shadow-2xl w-full max-w-md text-center border border-gray-100">
+          <div className="w-16 h-16 bg-black text-white rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Lock size={32} />
+          </div>
+          <h1 className="text-3xl font-black mb-2 tracking-tighter">ADMIN LOGIN</h1>
+          <p className="text-gray-400 mb-8">Secure Access Only</p>
           <input 
             type="password" 
             placeholder="Security Key" 
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full p-4 bg-gray-100 rounded-xl mb-4 text-center text-lg focus:ring-2 focus:ring-black outline-none"
+            className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-black rounded-2xl mb-4 text-center text-lg transition-all outline-none"
           />
-          <button className="w-full bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition">
-            Unlock
+          <button className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all active:scale-95">
+            Dashboard entsperren
           </button>
         </form>
       </div>
     );
   }
 
-  // --- DASHBOARD VIEW ---
   return (
-    <div className="min-h-screen bg-[#F5F5F7] p-8">
+    <div className="min-h-screen bg-[#F5F5F7] p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-black">SECURE. <span className="text-gray-400">Dashboard</span></h1>
-          <div className="flex bg-white p-1 rounded-xl shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+          <h1 className="text-4xl font-black tracking-tighter italic">SECURE.<span className="text-[#0071E3]">ADMIN</span></h1>
+          <div className="flex bg-gray-200/50 p-1.5 rounded-2xl backdrop-blur-md">
             <button 
               onClick={() => setActiveTab('orders')}
-              className={`px-6 py-2 rounded-lg font-bold transition ${activeTab === 'orders' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`px-8 py-3 rounded-xl font-bold transition-all ${activeTab === 'orders' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-black'}`}
             >
-              Orders
+              Bestellungen
             </button>
             <button 
               onClick={() => setActiveTab('messages')}
-              className={`px-6 py-2 rounded-lg font-bold transition ${activeTab === 'messages' ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+              className={`px-8 py-3 rounded-xl font-bold transition-all ${activeTab === 'messages' ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-black'}`}
             >
               Support
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="space-y-4">
-          {loading && <p className="text-center text-gray-400">Lade Daten...</p>}
+        <div className="space-y-6">
+          {loading && <div className="text-center py-10 animate-pulse text-gray-400">Synchronisiere Daten...</div>}
           
           {activeTab === 'orders' && data.map(order => (
-            <div key={order._id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between gap-6">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="font-mono text-xs text-gray-400">#{order._id.slice(-6)}</span>
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
-                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 
-                    order.status === 'shipped' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+            <div key={order._id} className="bg-white p-8 rounded-[28px] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8 group hover:shadow-md transition-all">
+              <div className="flex-1 w-full">
+                <div className="flex items-center gap-4 mb-4">
+                  <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    order.status === 'pending' ? 'bg-orange-100 text-orange-600' : 
+                    order.status === 'shipped' ? 'bg-blue-100 text-blue-600' : 
+                    order.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                   }`}>
                     {order.status}
                   </span>
-                  <span className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="font-mono text-xs text-gray-300">ID: {order._id.slice(-8)}</span>
                 </div>
-                <h3 className="font-bold text-lg">{order.firstName} {order.lastName}</h3>
-                <p className="text-gray-500 text-sm">{order.address.street}, {order.address.zip} {order.address.city}</p>
-                <div className="mt-3 flex gap-2 flex-wrap">
+                <h3 className="font-bold text-2xl mb-1">{order.firstName} {order.lastName}</h3>
+                <p className="text-gray-400 font-medium mb-4">{order.address.street}, {order.address.zip} {order.address.city}</p>
+                
+                <div className="flex gap-2 flex-wrap">
                   {order.items.map((item, i) => (
-                    <span key={i} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs border border-gray-200">
+                    <span key={i} className="bg-gray-50 text-gray-500 px-3 py-1 rounded-lg text-xs font-bold border border-gray-100">
                       {item.name}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="flex flex-col items-end justify-between min-w-[200px]">
-                <div className="text-xl font-bold">{order.totalAmount.toFixed(2)}€</div>
-                <div className="text-sm text-gray-500 mb-4">{order.paymentMethod} ({order.provider || 'Cash'})</div>
+              <div className="flex flex-col items-center md:items-end gap-4 w-full md:w-auto">
+                <div className="text-3xl font-black">{order.totalAmount.toFixed(2)}€</div>
                 
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  {order.status !== 'shipped' && (
-                    <button onClick={() => updateStatus(order._id, 'shipped')} className="bg-green-100 text-green-700 p-2 rounded-lg hover:bg-green-200" title="Als versendet markieren">
-                      <Truck size={20} />
-                    </button>
-                  )}
-                   {order.status !== 'completed' && (
-                    <button onClick={() => updateStatus(order._id, 'completed')} className="bg-blue-100 text-blue-700 p-2 rounded-lg hover:bg-blue-200" title="Abschließen">
-                      <Check size={20} />
-                    </button>
-                  )}
-                  <button onClick={() => updateStatus(order._id, 'cancelled')} className="bg-red-50 text-red-500 p-2 rounded-lg hover:bg-red-100" title="Stornieren">
-                    <XCircle size={20} />
+                <div className="flex gap-3">
+                  {/* VERSENDET */}
+                  <button 
+                    onClick={() => updateStatus(order._id, 'shipped')} 
+                    className="p-4 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                    title="Als versendet markieren"
+                  >
+                    <Truck size={22} />
+                  </button>
+                  
+                  {/* ABSCHLIESSEN */}
+                  <button 
+                    onClick={() => updateStatus(order._id, 'completed')} 
+                    className="p-4 bg-green-50 text-green-600 rounded-2xl hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                    title="Bestellung abschließen"
+                  >
+                    <Check size={22} />
+                  </button>
+
+                  {/* STORNIEREN */}
+                  <button 
+                    onClick={() => updateStatus(order._id, 'cancelled')} 
+                    className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                    title="Stornieren"
+                  >
+                    <XCircle size={22} />
                   </button>
                 </div>
               </div>
@@ -150,20 +170,34 @@ export default function AdminDashboard() {
           ))}
 
           {activeTab === 'messages' && data.map(msg => (
-            <div key={msg._id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex justify-between mb-2">
-                <h3 className="font-bold">{msg.email}</h3>
-                <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleString()}</span>
+            <div key={msg._id} className="bg-white p-8 rounded-[28px] shadow-sm border border-gray-100 group">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-bold text-xl mb-1">{msg.email}</h3>
+                  <p className="text-xs text-gray-400 font-medium">{new Date(msg.createdAt).toLocaleString('de-DE')}</p>
+                </div>
+                <div className="flex gap-2">
+                   <a href={`mailto:${msg.email}`} className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-[#0071E3] hover:text-white transition-all">
+                      <Mail size={20} />
+                   </a>
+                   <button onClick={() => deleteMsg(msg._id)} className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                      <Trash2 size={20} />
+                   </button>
+                </div>
               </div>
-              <p className="text-gray-600 bg-gray-50 p-4 rounded-xl">{msg.message}</p>
+              <div className="bg-gray-50 p-6 rounded-2xl text-gray-700 leading-relaxed border border-gray-100">
+                {msg.message}
+              </div>
             </div>
           ))}
 
           {data.length === 0 && !loading && (
-             <div className="text-center py-20 text-gray-400">Keine Daten gefunden.</div>
+             <div className="text-center py-32 bg-white rounded-[32px] border-2 border-dashed border-gray-200">
+                <Package size={48} className="mx-auto mb-4 text-gray-200" />
+                <p className="text-gray-400 font-bold text-lg">Keine Einträge gefunden.</p>
+             </div>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -43,3 +43,12 @@ export const getMessages = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+//4. Nachricht löschen
+export const deleteMessage = async (req, res) => {
+  try {
+    await Message.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Nachricht gelöscht' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
