@@ -32,7 +32,7 @@ export default function ProductCard({ id, name, price, image }) {
         </h3>
         
         <p className="text-gray-500 text-sm line-clamp-2 mb-4">
-          Die sicherste Hardware-Wallet für deine Krypto-Assets. Zertifizierte Sicherheitschips.
+          Penis.
         </p>
       </div>
 
