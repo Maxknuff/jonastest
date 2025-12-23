@@ -1,11 +1,20 @@
-import React from 'react';
-import { isCartOpen, isSupportOpen, searchQuery, cartItems } from '../store';
+import React, { useEffect } from 'react'; // useEffect hinzugefügt
+import { isCartOpen, isSupportOpen, searchQuery, cartItems, loadStockLevels } from '../store'; // loadStockLevels importiert
 import { useStore } from '@nanostores/react';
 import { Search, ShoppingBag, MessageCircle } from 'lucide-react';
 
 export default function Header() {
   const $cartItems = useStore(cartItems);
   
+  // --- NEU: Bestände beim Laden der Seite abrufen ---
+  useEffect(() => {
+    loadStockLevels();
+    
+    // Optional: Alle 60 Sekunden aktualisieren, falls jemand anderes etwas kauft
+    const interval = setInterval(loadStockLevels, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Berechne Anzahl der Items für das kleine rote Badge
   const cartCount = $cartItems.reduce((acc, item) => acc + item.quantity, 0);
 

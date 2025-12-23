@@ -52,6 +52,23 @@ app.delete('/api/admin/messages/:id', checkAdmin, deleteMessage);
 app.get('/api/admin/stock', checkAdmin, getStock);
 app.post('/api/admin/stock', checkAdmin, updateStock);
 
+app.get('/api/stock', async (req, res) => {
+  try {
+    // Importiere das Model, falls noch nicht geschehen
+    const Product = mongoose.model('Product'); 
+    const products = await Product.find({}, 'productId stock');
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+app.get('/api/stock', async (req, res) => {
+  const Product = (await import('./models/Product.js')).default;
+  const products = await Product.find({}, 'productId stock');
+  res.json(products);
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Backend Server running on http://localhost:${PORT}`);
 });
