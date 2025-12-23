@@ -2,11 +2,11 @@
 import ProductCard from '../components/ProductCard.jsx';
 import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
 
-// Dummy Produkte für den Test
 const products = [
   { id: 1, name: "Ledger Nano X", price: 149.00, image: "https://shop.ledger.com/cdn/shop/products/Ledger-Nano-X-Black-1.png" },
   { id: 2, name: "Trezor Model T", price: 219.00, image: "https://shop.trezor.io/static/img/product/TrezorModelT/TrezorModelT_01.png" },
   { id: 3, name: "YubiKey 5C", price: 55.00, image: "https://www.yubico.com/wp-content/uploads/2018/09/yk5c-nfc-hero.png" },
+  { id: 4, name: "BitBox02", price: 129.00, image: "https://shiftcrypto.ch/images/shop/bitbox02-multi-front.png" }, 
 ];
 ---
 
@@ -14,20 +14,36 @@ const products = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>SECURE. Shop</title>
+    <title>Store. The best way to buy secure.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   </head>
-  <body class="bg-white text-black font-sans antialiased">
+  <body class="bg-[#f5f5f7] font-sans antialiased text-[#1d1d1f]">
     
-    <header class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-md border-b border-neutral-100">
-      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <h1 class="text-2xl font-black tracking-tighter">SECURE.</h1>
+    <header class="fixed top-0 w-full z-30 bg-white/70 backdrop-blur-xl border-b border-white/20">
+      <div class="max-w-[980px] mx-auto px-6 h-[48px] flex items-center justify-between">
+        <a href="/" class="text-xl font-semibold tracking-tight opacity-90 hover:opacity-100 transition-opacity">
+            SECURE<span class="text-[#86868b]">.Store</span>
+        </a>
+        <div class="text-xs text-[#86868b] font-medium hidden sm:block">
+            High-End Privacy Hardware
         </div>
+      </div>
     </header>
 
-    <main class="pt-32 pb-20 max-w-7xl mx-auto px-6">
-      <h2 class="text-4xl md:text-6xl font-bold mb-12 tracking-tight">HARDWARE.</h2>
+    <main class="pt-32 pb-32 max-w-[1200px] mx-auto px-6">
       
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="text-center mb-20">
+        <h1 class="text-5xl md:text-7xl font-semibold tracking-tight mb-4 text-[#1d1d1f]">
+          Sicherheit. <span class="text-[#6e6e73]">Neu definiert.</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-[#1d1d1f] max-w-2xl mx-auto font-normal">
+          Die fortschrittlichste Hardware für deine digitalen Assets. 
+          Designt um zu schützen.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {products.map((product) => (
           <ProductCard 
             client:visible 
@@ -38,6 +54,7 @@ const products = [
           />
         ))}
       </div>
+
     </main>
 
     <CheckoutOverlay client:load />

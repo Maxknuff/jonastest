@@ -2,82 +2,84 @@ import React from 'react';
 import { useStore } from '@nanostores/react';
 import { isCartOpen, cartItems, removeCartItem } from '../store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, ArrowRight } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function CheckoutOverlay() {
-  // Wir hören auf den Store: Ändert sich was, rendert React neu.
   const $isCartOpen = useStore(isCartOpen);
   const $cartItems = useStore(cartItems);
 
-  // Preis berechnen
   const total = $cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <AnimatePresence>
       {$isCartOpen && (
         <>
-          {/* Dunkler Hintergrund (Backdrop) */}
+          {/* Backdrop: Sanfter Blur statt hartem Schwarz */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => isCartOpen.set(false)}
-            className="fixed inset-0 bg-black z-40"
+            className="fixed inset-0 bg-[#323232]/30 backdrop-blur-sm z-40"
           />
 
-          {/* Der Slide-In Warenkorb */}
+          {/* Panel: Apple Style Floating Panel */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-50 shadow-2xl flex flex-col border-l border-neutral-200"
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed right-0 top-0 h-full w-full max-w-[400px] bg-white/90 backdrop-blur-xl z-50 shadow-2xl flex flex-col p-6 sm:m-4 sm:h-[calc(100%-2rem)] sm:rounded-3xl border border-white/20"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-neutral-100">
-              <h2 className="text-xl font-bold tracking-tight">WARENKORB ({$cartItems.length})</h2>
-              <button onClick={() => isCartOpen.set(false)} className="p-2 hover:bg-neutral-100 rounded-full">
-                <X size={24} />
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">Warenkorb</h2>
+              <button 
+                onClick={() => isCartOpen.set(false)} 
+                className="bg-[#e8e8ed] p-2 rounded-full text-[#1d1d1f] hover:bg-[#d2d2d7] transition-colors"
+              >
+                <X size={20} />
               </button>
             </div>
 
-            {/* Items Liste */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Items */}
+            <div className="flex-1 overflow-y-auto space-y-6 pr-2">
               {$cartItems.length === 0 ? (
-                <p className="text-neutral-500 text-center mt-10">Dein Warenkorb ist leer.</p>
+                <div className="flex flex-col items-center justify-center h-full text-[#86868b]">
+                  <p>Dein Einkaufswagen ist leer.</p>
+                </div>
               ) : (
                 $cartItems.map((item) => (
-                  <div key={item.id} className="flex gap-4">
-                    <img src={item.image} alt={item.name} className="w-20 h-20 object-cover bg-neutral-100" />
+                  <div key={item.id} className="flex gap-4 items-center">
+                    <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center p-2">
+                       <img src={item.image} alt={item.name} className="max-h-full max-w-full object-contain" />
+                    </div>
                     <div className="flex-1">
-                      <h4 className="font-medium">{item.name}</h4>
-                      <p className="text-sm text-neutral-500">{item.price.toFixed(2)}€</p>
-                      <div className="flex items-center gap-4 mt-2">
-                        <span className="text-xs bg-neutral-100 px-2 py-1 rounded">Menge: {item.quantity}</span>
-                        <button 
-                          onClick={() => removeCartItem(item.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 size={16} />
+                      <h4 className="font-semibold text-[#1d1d1f]">{item.name}</h4>
+                      <p className="text-sm text-[#86868b]">{item.price.toFixed(2)} €</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                        <span className="text-xs font-medium bg-[#f5f5f7] px-2 py-1 rounded-md text-[#1d1d1f]">x{item.quantity}</span>
+                        <button onClick={() => removeCartItem(item.id)} className="text-[#0071e3] text-xs hover:underline">
+                          Entfernen
                         </button>
-                      </div>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            {/* Footer mit Checkout Button */}
-            <div className="p-6 border-t border-neutral-100 bg-neutral-50">
-              <div className="flex justify-between mb-4 text-lg font-bold">
-                <span>Total</span>
-                <span>{total.toFixed(2)}€</span>
+            {/* Footer */}
+            <div className="mt-6 pt-6 border-t border-[#d2d2d7]/30">
+              <div className="flex justify-between mb-6 text-xl font-semibold text-[#1d1d1f]">
+                <span>Gesamt</span>
+                <span>{total.toFixed(2)} €</span>
               </div>
               <a 
                 href="/checkout"
-                className="flex items-center justify-center gap-2 w-full bg-black text-white py-4 font-bold hover:bg-neutral-800 transition-colors"
+                className="block w-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-center py-4 rounded-full font-medium shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
               >
-                ZUR KASSE <ArrowRight size={20} />
+                Zur Kasse
               </a>
             </div>
           </motion.div>
