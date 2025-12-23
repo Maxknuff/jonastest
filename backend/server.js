@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import { createOrder } from './controllers/orderController.js';
 import { createMessage } from './controllers/supportController.js'; // NEU
 import { getOrders, updateOrderStatus, getMessages, checkAdmin, deleteMessage, deleteOrder } from './controllers/adminController.js';
+import { getStock, updateStock } from './controllers/adminController.js';
+
 
 dotenv.config();
 
@@ -34,6 +36,8 @@ app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus); // Status ände
 app.get('/api/admin/messages', checkAdmin, getMessages);       // Nachrichten lesen
 app.delete('/api/admin/messages/:id', checkAdmin, deleteMessage);
 app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder); // Bestellung löschen
+app.get('/api/admin/stock', checkAdmin, getStock);
+app.post('/api/admin/stock', checkAdmin, updateStock);
 
 // CORS Update (Ganz wichtig für DELETE und PUT!)
 app.use(cors({
