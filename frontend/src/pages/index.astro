@@ -1,11 +1,15 @@
 ---
+// CSS laden
 import '../styles.css';
-import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
-import SupportOverlay from '../components/SupportOverlay.jsx'; // NEU
-import ProductGrid from '../components/ProductGrid.jsx';       // NEU
-import { Search, ShoppingBag, HelpCircle } from 'lucide-react';
 
-// Datenquelle (Single Source of Truth)
+// Komponenten importieren
+import Header from '../components/Header.jsx';          // NEU
+import ProductCard from '../components/ProductCard.jsx';
+import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
+import SupportOverlay from '../components/SupportOverlay.jsx';
+import ProductGrid from '../components/ProductGrid.jsx';
+
+// Datenquelle
 const products = [
   { id: "VAPE12K", name: "RANDM TORNADO 12000", price: 59.90, image: "/products/VAPE12K.png" },
   { id: "VAPE15K", name: "RANDM TORNADO 15000", price: 29.90, image: "/products/VAPE15K.png" },
@@ -21,38 +25,7 @@ const products = [
   </head>
   <body class="bg-[#F5F5F7] text-[#1D1D1F]">
     
-    <header class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 transition-all">
-      <div class="max-w-7xl mx-auto px-4 h-20 flex items-center gap-8">
-        
-        <a href="/" class="text-2xl font-black tracking-tighter flex items-center gap-1">
-          SECURE<span class="text-[#0071E3] text-4xl">.</span>
-        </a>
-
-        <div class="hidden md:flex flex-1 max-w-2xl relative">
-          <input 
-            id="searchInput"
-            type="text" 
-            placeholder="Suche..." 
-            class="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-[#0071E3] focus:outline-none transition-all"
-          />
-          <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
-        </div>
-
-        <div class="flex items-center gap-4 ml-auto">
-          
-          {/* SUPPORT BUTTON (Funktional!) */}
-          <button id="supportBtn" class="flex items-center gap-2 text-sm font-medium hover:text-[#0071E3] transition-colors bg-gray-100 hover:bg-blue-50 px-4 py-2 rounded-full">
-            <HelpCircle size={18} />
-            <span class="hidden sm:block">Support</span>
-          </button>
-
-          {/* WARENKORB BUTTON (Funktional!) */}
-          <button id="cartBtn" class="relative cursor-pointer group p-2 hover:bg-gray-100 rounded-full transition">
-             <ShoppingBag size={24} />
-          </button>
-        </div>
-      </div>
-    </header>
+    <Header client:load />
 
     <main class="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
@@ -77,28 +50,6 @@ const products = [
 
     <CheckoutOverlay client:load />
     <SupportOverlay client:load />
-
-    <script>
-      import { isCartOpen, isSupportOpen, searchQuery } from '../store';
-
-      // 1. Suche verbinden
-      const searchInput = document.getElementById('searchInput');
-      searchInput?.addEventListener('input', (e) => {
-        searchQuery.set(e.target.value);
-      });
-
-      // 2. Support Button verbinden
-      const supportBtn = document.getElementById('supportBtn');
-      supportBtn?.addEventListener('click', () => {
-        isSupportOpen.set(true);
-      });
-
-      // 3. Warenkorb Button verbinden
-      const cartBtn = document.getElementById('cartBtn');
-      cartBtn?.addEventListener('click', () => {
-        isCartOpen.set(true);
-      });
-    </script>
 
   </body>
 </html>
