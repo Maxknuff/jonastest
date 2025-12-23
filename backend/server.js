@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createOrder } from './controllers/orderController.js';
 import { createMessage } from './controllers/supportController.js'; // NEU
+import { getOrders, updateOrderStatus, getMessages, checkAdmin } from './controllers/adminController.js'; // NEU
 
 dotenv.config();
 
@@ -22,6 +23,11 @@ mongoose.connect(process.env.MONGO_URI)
 app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage); // NEU: Support Route
+
+// --- ADMIN ROUTES (Geschützt) ---
+app.get('/api/admin/orders', checkAdmin, getOrders);           // Bestellungen lesen
+app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus); // Status ändern
+app.get('/api/admin/messages', checkAdmin, getMessages);       // Nachrichten lesen
 
 app.listen(PORT, () => {
   console.log(`🚀 Backend Server running on http://localhost:${PORT}`);
