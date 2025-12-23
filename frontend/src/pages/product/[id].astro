@@ -1,0 +1,108 @@
+---
+// Importiere Header & Daten
+// WICHTIG: Hier waren vorher zu wenige Punkte bei styles.css
+import '../../styles.css'; 
+
+import Header from '../../components/Header.jsx';
+import CheckoutOverlay from '../../components/CheckoutOverlay.jsx';
+import SupportOverlay from '../../components/SupportOverlay.jsx';
+import { products } from '../../products.js'; 
+import { ShoppingBag, ArrowLeft, ShieldCheck, Truck } from 'lucide-react';
+
+// 1. Astro muss wissen, welche IDs es gibt
+export function getStaticPaths() {
+  return products.map(product => ({
+    params: { id: product.id },
+    props: { product },
+  }));
+}
+
+const { product } = Astro.props;
+---
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{product.name} | SECURE.</title>
+  </head>
+  <body class="bg-[#F5F5F7] text-[#1D1D1F]">
+    
+    <Header client:load />
+
+    <main class="pt-32 pb-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      {/* Zurück Button */}
+      <a href="/" class="inline-flex items-center gap-2 text-gray-500 hover:text-black mb-8 transition-colors font-medium">
+        <ArrowLeft size={20} /> Zurück zum Shop
+      </a>
+
+      <div class="bg-white rounded-[30px] p-8 md:p-12 shadow-sm border border-gray-100">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center">
+          
+          {/* LINK: Das Bild */}
+          <div class="relative bg-gray-50 rounded-2xl p-8 flex items-center justify-center aspect-square group overflow-hidden">
+             <img 
+               src={product.image} 
+               alt={product.name} 
+               class="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 drop-shadow-xl"
+               transition:name={`image-${product.id}`} 
+             />
+          </div>
+
+          {/* RECHTS: Die Infos */}
+          <div>
+            <span class="text-[#0071E3] font-bold tracking-wide uppercase text-xs mb-2 block">Premium Hardware</span>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[#1D1D1F]">{product.name}</h1>
+            
+            <div class="text-3xl font-medium text-[#1D1D1F] mb-8">
+              {product.price.toFixed(2)}€
+            </div>
+
+            <p class="text-gray-500 text-lg leading-relaxed mb-8 border-b border-gray-100 pb-8">
+              {product.description}
+            </p>
+
+            {/* Features Liste (Statisch als Beispiel) */}
+            <div class="space-y-3 mb-8">
+              <div class="flex items-center gap-3 text-sm text-gray-600">
+                <ShieldCheck class="text-[#0071E3]" size={20} /> 
+                <span>24 Monate Garantie & Support</span>
+              </div>
+              <div class="flex items-center gap-3 text-sm text-gray-600">
+                <Truck class="text-[#0071E3]" size={20} /> 
+                <span>Diskreter Versand (2-3 Werktage)</span>
+              </div>
+            </div>
+
+            {/* ADD TO CART BUTTON */}
+            <button 
+              id="addToCartBtn"
+              data-product={JSON.stringify(product)}
+              class="w-full bg-[#0071E3] hover:bg-[#0077ED] text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+            >
+              <ShoppingBag size={20} /> In den Warenkorb
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <CheckoutOverlay client:load />
+    <SupportOverlay client:load />
+
+    {/* Logic Script für den Button */}
+    <script>
+      import { addCartItem } from '../../store';
+      
+      const btn = document.getElementById('addToCartBtn');
+      btn?.addEventListener('click', () => {
+        const product = JSON.parse(btn.dataset.product);
+        addCartItem(product);
+      });
+    </script>
+
+  </body>
+</html>
