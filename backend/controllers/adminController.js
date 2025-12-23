@@ -52,3 +52,13 @@ export const deleteMessage = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Bestellung komplett löschen
+export const deleteOrder = async (req, res) => {
+  try {
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Bestellung gelöscht' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

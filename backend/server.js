@@ -4,8 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createOrder } from './controllers/orderController.js';
 import { createMessage } from './controllers/supportController.js'; // NEU
-import { getOrders, updateOrderStatus, getMessages, checkAdmin } from './controllers/adminController.js'; // NEU
-import { deleteMessage } from './controllers/adminController.js';
+import { getOrders, updateOrderStatus, getMessages, checkAdmin, deleteMessage, deleteOrder } from './controllers/adminController.js';
 
 dotenv.config();
 
@@ -34,6 +33,7 @@ app.get('/api/admin/orders', checkAdmin, getOrders);           // Bestellungen l
 app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus); // Status ändern
 app.get('/api/admin/messages', checkAdmin, getMessages);       // Nachrichten lesen
 app.delete('/api/admin/messages/:id', checkAdmin, deleteMessage);
+app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder); // Bestellung löschen
 
 // CORS Update (Ganz wichtig für DELETE und PUT!)
 app.use(cors({

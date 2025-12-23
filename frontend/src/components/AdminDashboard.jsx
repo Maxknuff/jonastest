@@ -37,9 +37,21 @@ export default function AdminDashboard() {
         { status: newStatus },
         { headers: { 'x-admin-secret': password } }
       );
-      fetchData(password); // Liste aktualisieren
+      fetchData(password);
     } catch (err) {
       alert("Fehler beim Aktualisieren des Status.");
+    }
+  };
+
+  const deleteOrder = async (id) => {
+    if (!window.confirm("Bestellung wirklich unwiderruflich löschen?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/orders/${id}`, {
+        headers: { 'x-admin-secret': password }
+      });
+      fetchData(password);
+    } catch (err) {
+      alert("Fehler beim Löschen der Bestellung.");
     }
   };
 
@@ -138,7 +150,6 @@ export default function AdminDashboard() {
                 <div className="text-3xl font-black">{order.totalAmount.toFixed(2)}€</div>
                 
                 <div className="flex gap-3">
-                  {/* VERSENDET */}
                   <button 
                     onClick={() => updateStatus(order._id, 'shipped')} 
                     className="p-4 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
@@ -147,7 +158,6 @@ export default function AdminDashboard() {
                     <Truck size={22} />
                   </button>
                   
-                  {/* ABSCHLIESSEN */}
                   <button 
                     onClick={() => updateStatus(order._id, 'completed')} 
                     className="p-4 bg-green-50 text-green-600 rounded-2xl hover:bg-green-600 hover:text-white transition-all shadow-sm"
@@ -156,13 +166,21 @@ export default function AdminDashboard() {
                     <Check size={22} />
                   </button>
 
-                  {/* STORNIEREN */}
                   <button 
                     onClick={() => updateStatus(order._id, 'cancelled')} 
                     className="p-4 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
                     title="Stornieren"
                   >
                     <XCircle size={22} />
+                  </button>
+
+                  {/* DER LÖSCH-BUTTON JETZT AN DER RICHTIGEN STELLE */}
+                  <button 
+                    onClick={() => deleteOrder(order._id)} 
+                    className="p-4 bg-gray-100 text-gray-400 rounded-2xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                    title="Bestellung löschen"
+                  >
+                    <Trash2 size={22} />
                   </button>
                 </div>
               </div>
