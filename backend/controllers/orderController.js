@@ -6,7 +6,7 @@ import Order from '../models/Order.js';
 // WICHTIG: Diese IDs müssen exakt so auch im Frontend (index.astro) stehen.
 const PRODUCT_CATALOG = {
   "VAPE12K": 10.00,
-  "VAPE15K": 29.90,
+  "VAPE15K": 15.00,
   "prod_hardware_wallet": 149.00,
   "prod_stick": 149.00 // Beispiel für weitere Produkte
 };
