@@ -1,12 +1,16 @@
 ---
+// WICHTIG: Hier laden wir das CSS!
+import '../styles.css';
+
 import ProductCard from '../components/ProductCard.jsx';
 import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
+import { Search, ShoppingBag, Menu } from 'lucide-react';
 
 const products = [
   { id: 1, name: "Ledger Nano X", price: 149.00, image: "https://shop.ledger.com/cdn/shop/products/Ledger-Nano-X-Black-1.png" },
   { id: 2, name: "Trezor Model T", price: 219.00, image: "https://shop.trezor.io/static/img/product/TrezorModelT/TrezorModelT_01.png" },
-  { id: 3, name: "YubiKey 5C", price: 55.00, image: "https://www.yubico.com/wp-content/uploads/2018/09/yk5c-nfc-hero.png" },
-  { id: 4, name: "BitBox02", price: 129.00, image: "https://shiftcrypto.ch/images/shop/bitbox02-multi-front.png" }, 
+  { id: 3, name: "YubiKey 5C NFC", price: 55.00, image: "https://www.yubico.com/wp-content/uploads/2018/09/yk5c-nfc-hero.png" },
+  { id: 4, name: "BitBox02 Multi", price: 129.00, image: "https://shiftcrypto.ch/images/shop/bitbox02-multi-front.png" }, 
 ];
 ---
 
@@ -14,36 +18,62 @@ const products = [
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Store. The best way to buy secure.</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <title>SECURE. | Premium Hardware Shop</title>
   </head>
-  <body class="bg-[#f5f5f7] font-sans antialiased text-[#1d1d1f]">
+  <body class="bg-[#F5F5F7] text-[#1D1D1F]">
     
-    <header class="fixed top-0 w-full z-30 bg-white/70 backdrop-blur-xl border-b border-white/20">
-      <div class="max-w-[980px] mx-auto px-6 h-[48px] flex items-center justify-between">
-        <a href="/" class="text-xl font-semibold tracking-tight opacity-90 hover:opacity-100 transition-opacity">
-            SECURE<span class="text-[#86868b]">.Store</span>
+    <header class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 transition-all">
+      <div class="max-w-7xl mx-auto px-4 h-20 flex items-center gap-8">
+        
+        <a href="/" class="text-2xl font-black tracking-tighter flex items-center gap-1">
+          SECURE<span class="text-[#0071E3] text-4xl">.</span>
         </a>
-        <div class="text-xs text-[#86868b] font-medium hidden sm:block">
-            High-End Privacy Hardware
+
+        <div class="hidden md:flex flex-1 max-w-2xl relative">
+          <input 
+            type="text" 
+            placeholder="Suche nach Hardware Wallets..." 
+            class="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-[#0071E3] focus:outline-none transition-all"
+          />
+          <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
+        </div>
+
+        <div class="flex items-center gap-6 ml-auto">
+          <button class="text-sm font-medium hover:text-[#0071E3] transition-colors hidden sm:block">
+            Support
+          </button>
+          <div class="relative cursor-pointer group">
+             <ShoppingBag size={24} />
+             </div>
         </div>
       </div>
     </header>
 
-    <main class="pt-32 pb-32 max-w-[1200px] mx-auto px-6">
+    <main class="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="text-center mb-20">
-        <h1 class="text-5xl md:text-7xl font-semibold tracking-tight mb-4 text-[#1d1d1f]">
-          Sicherheit. <span class="text-[#6e6e73]">Neu definiert.</span>
-        </h1>
-        <p class="text-xl md:text-2xl text-[#1d1d1f] max-w-2xl mx-auto font-normal">
-          Die fortschrittlichste Hardware für deine digitalen Assets. 
-          Designt um zu schützen.
-        </p>
+      <div class="bg-black text-white rounded-3xl p-12 mb-16 relative overflow-hidden text-center md:text-left">
+        <div class="relative z-10 max-w-2xl">
+          <span class="text-[#0071E3] font-bold tracking-wide uppercase text-sm mb-2 block">Neu eingetroffen</span>
+          <h1 class="text-5xl md:text-6xl font-bold tracking-tight mb-6">
+            Sicherheit für die nächste Generation.
+          </h1>
+          <p class="text-gray-400 text-lg mb-8 max-w-lg">
+            Entdecke die weltweit sichersten Hardware-Wallets. 
+            Offline-Speicherung für maximale Sicherheit.
+          </p>
+          <button class="bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gray-200 transition-colors">
+            Jetzt entdecken
+          </button>
+        </div>
+        <div class="absolute -right-20 -top-40 w-[600px] h-[600px] bg-[#0071E3] opacity-20 blur-[120px] rounded-full pointer-events-none"></div>
+      </div>
+
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold tracking-tight">Bestseller</h2>
+        <a href="#" class="text-[#0071E3] hover:underline text-sm font-medium">Alle anzeigen</a>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
           <ProductCard 
             client:visible 

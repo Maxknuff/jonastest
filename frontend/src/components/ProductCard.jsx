@@ -1,38 +1,54 @@
 import React from 'react';
 import { addCartItem } from '../store';
-import { Plus } from 'lucide-react';
+import { ShoppingCart, Star } from 'lucide-react';
 
 export default function ProductCard({ id, name, price, image }) {
   return (
-    <div className="group relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-500 ease-out flex flex-col items-center text-center h-[500px]">
+    <div className="bg-white rounded-[20px] p-6 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between h-[450px] group">
       
-      {/* "New" Badge - optional, aber typisch Apple */}
-      <span className="text-orange-500 text-xs font-semibold tracking-wide uppercase mb-2">Neu</span>
-
-      <h3 className="text-3xl font-semibold text-[#1d1d1f] tracking-tight mb-2">
-        {name}
-      </h3>
-      
-      <p className="text-[#1d1d1f] text-lg mb-8">
-        Professionelle Sicherheit.<br/>Ab {price.toFixed(2)}€
-      </p>
-
-      {/* Bild Container - Nutzt den Platz maximal aus */}
-      <div className="flex-1 w-full flex items-center justify-center mb-8 relative">
+      {/* Bild-Bereich mit Zoom-Effekt */}
+      <div className="h-48 w-full flex items-center justify-center mb-4 overflow-hidden">
         <img
           src={image}
           alt={name}
-          className="max-h-64 w-auto object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110"
+          className="h-full object-contain group-hover:scale-110 transition-transform duration-500"
         />
       </div>
 
-      {/* Button: Apple Blue Pill */}
-      <div className="mt-auto">
+      {/* Info-Bereich */}
+      <div className="flex flex-col flex-grow">
+        {/* Fake Bewertung (Amazon Style) */}
+        <div className="flex items-center gap-1 mb-2 text-yellow-400">
+          <Star size={16} fill="currentColor" />
+          <Star size={16} fill="currentColor" />
+          <Star size={16} fill="currentColor" />
+          <Star size={16} fill="currentColor" />
+          <Star size={16} fill="currentColor" />
+          <span className="text-gray-400 text-xs ml-1">(128)</span>
+        </div>
+
+        <h3 className="text-lg font-semibold tracking-tight leading-tight mb-2">
+          {name}
+        </h3>
+        
+        <p className="text-gray-500 text-sm line-clamp-2 mb-4">
+          Die sicherste Hardware-Wallet für deine Krypto-Assets. Zertifizierte Sicherheitschips.
+        </p>
+      </div>
+
+      {/* Preis & Action */}
+      <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+        <div>
+          <span className="block text-xs text-gray-500">Preis</span>
+          <span className="text-2xl font-bold">{price.toFixed(2)}€</span>
+        </div>
+        
         <button
           onClick={() => addCartItem({ id, name, price, image })}
-          className="bg-[#0071e3] hover:bg-[#0077ed] text-white rounded-full px-6 py-2 font-medium text-sm flex items-center gap-2 transition-colors"
+          className="bg-[#0071E3] hover:bg-[#0077ED] text-white rounded-full p-3 shadow-lg shadow-blue-500/30 active:scale-95 transition-all flex items-center gap-2"
         >
-          Hinzufügen <Plus size={16} />
+          <ShoppingCart size={20} />
+          <span className="font-medium pr-2">Kaufen</span>
         </button>
       </div>
     </div>

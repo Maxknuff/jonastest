@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Apple-Style Font Settings */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #F5F5F7; /* Apple Hellgrau */
+  color: #1D1D1F; /* Apple Fast-Schwarz */
+}
+
+/* Scrollbar verstecken für cleanen Look */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
