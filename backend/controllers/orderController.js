@@ -2,8 +2,14 @@ import Joi from 'joi';
 import axios from 'axios';
 import Order from '../models/Order.js';
 
-// HINWEIS: Wir lesen DISCORD_URL nicht hier oben, sondern erst unten in der Funktion!
-// Sonst ist sie beim Server-Start noch leer.
+// 1. DEIN PRODUKT-KATALOG (Hier Preise definieren!)
+// WICHTIG: Diese IDs müssen exakt so auch im Frontend (index.astro) stehen.
+const PRODUCT_CATALOG = {
+  "VAPE12K": 10.00,
+  "VAPE15K": 29.90,
+  "prod_hardware_wallet": 149.00,
+  "prod_stick": 149.00 // Beispiel für weitere Produkte
+};
 
 // --- VALIDIERUNG (JOI) ---
 const orderSchema = Joi.object({
@@ -36,8 +42,22 @@ export const createOrder = async (req, res) => {
 
     const validData = await orderSchema.validateAsync(req.body, { stripUnknown: true });
     
-    // Preisberechnung
-    const calculatedTotal = validData.items.length * 0.01; 
+    // 2. ECHTE PREISBERECHNUNG (Trust No One)
+    // Wir ignorieren den Preis vom Frontend und nehmen den aus dem Katalog.
+    let calculatedTotal = 0;
+
+    for (const item of validData.items) {
+      const realPrice = PRODUCT_CATALOG[item.id];
+      
+      // Sicherheits-Check: Gibt es das Produkt überhaupt?
+      if (realPrice === undefined) {
+        throw new Error(`Ungültige Produkt-ID erkannt: ${item.id} (${item.name})`);
+      }
+      
+      calculatedTotal += realPrice;
+    }
+
+    console.log(`💰 Berechneter Gesamtpreis: ${calculatedTotal.toFixed(2)}€`);
 
     // DB Save
     const newOrder = new Order({
@@ -70,15 +90,14 @@ export const createOrder = async (req, res) => {
 
 // --- DISCORD HELPER FUNCTION ---
 const sendToDiscord = async (order) => {
-  // FIX: Variable erst HIER lesen, wenn dotenv sicher geladen ist
+  // Variable erst HIER lesen, wenn dotenv sicher geladen ist
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
 
   if (!webhookUrl) {
-    console.error("⚠️ FEHLER: DISCORD_WEBHOOK_URL ist nicht gesetzt oder konnte nicht gelesen werden!");
+    console.error("⚠️ FEHLER: DISCORD_WEBHOOK_URL ist nicht gesetzt!");
     return;
   }
 
-  // Debugging: Zeige die ersten 30 Zeichen der URL an, um zu prüfen ob sie stimmt
   console.log("Versuche Discord Senden an:", webhookUrl.substring(0, 30) + "...");
 
   const isOnline = order.paymentMethod === 'ONLINE';
