@@ -1,0 +1,26 @@
+---
+import '../styles.css';
+import CheckoutPage from '../components/CheckoutPage.jsx';
+---
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Sicher bezahlen - SECURE.</title>
+  </head>
+  <body class="bg-[#F5F5F7] min-h-screen flex flex-col items-center justify-center p-4">
+    
+    <a href="/" class="mb-8 text-2xl font-black tracking-tighter opacity-80 hover:opacity-100 transition-opacity">
+      SECURE<span class="text-[#0071E3] text-3xl">.</span>
+    </a>
+
+    <CheckoutPage client:only="react" />
+
+    <div class="mt-8 text-center text-xs text-gray-400 flex items-center gap-2">
+       <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+       256-bit SSL Encrypted Connection
+    </div>
+
+  </body>
+</html>
