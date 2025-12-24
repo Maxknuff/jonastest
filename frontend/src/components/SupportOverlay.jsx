@@ -5,6 +5,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageSquare, Send } from 'lucide-react';
 import axios from 'axios';
 
+// --- NEU: Automatische API-Erkennung ---
+const getApiUrl = () => {
+  if (typeof window !== "undefined" && window.location) {
+    // Wenn wir auf Vercel sind, nutze das echte Backend
+    if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
+      return "https://jonastest.onrender.com";
+    }
+  }
+  // Sonst lokal
+  return "http://localhost:5000";
+};
+
+const API_URL = getApiUrl();
+
 export default function SupportOverlay() {
   const isOpen = useStore(isSupportOpen);
   const [email, setEmail] = useState('');
@@ -15,7 +29,9 @@ export default function SupportOverlay() {
     e.preventDefault();
     setStatus('loading');
     try {
-      await axios.post('http://localhost:5000/api/support', { email, message: msg });
+      // KORREKTUR: Hier nutzen wir jetzt die dynamische API_URL statt localhost
+      await axios.post(`${API_URL}/api/support`, { email, message: msg });
+      
       setStatus('success');
       setTimeout(() => {
         setStatus('idle');
@@ -23,7 +39,8 @@ export default function SupportOverlay() {
         isSupportOpen.set(false);
       }, 2000);
     } catch (err) {
-      alert('Fehler beim Senden.');
+      console.error("Support Error:", err);
+      alert('Fehler beim Senden. Bitte versuche es später erneut.');
       setStatus('idle');
     }
   };
