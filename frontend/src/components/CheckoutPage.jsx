@@ -12,6 +12,7 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState(null);
 
   // --- NEU: DYNAMISCHE API URL ---
+  // Nimmt die URL von Vercel oder nutzt lokal Port 5000
   const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000';
 
   const [method, setMethod] = useState('ONSITE'); 
@@ -54,7 +55,9 @@ export default function CheckoutPage() {
         items: $cartItems.flatMap(item => Array(item.quantity).fill({ id: item.id, name: item.name }))
       };
 
-      // --- KORRIGIERT: Nutzt jetzt API_URL statt localhost ---
+      console.log("Sende Daten an:", `${API_URL}/api/orders`);
+
+      // KORREKTUR: Nutzt jetzt die Variable statt localhost
       const response = await axios.post(`${API_URL}/api/orders`, payload);
 
       if (response.data.success) {
@@ -65,6 +68,7 @@ export default function CheckoutPage() {
     } catch (err) {
       console.error("API Fehler:", err);
       setStatus('error');
+      
       if (err.code === "ERR_NETWORK") {
         setErrorMsg('Der Server ist nicht erreichbar. Bitte prüfe deine Internetverbindung oder versuche es später erneut.');
       } else {
@@ -73,7 +77,7 @@ export default function CheckoutPage() {
     }
   };
 
-  // --- REST DES CODES (SUCCESS & EMPTY VIEWS) BLEIBT GLEICH ---
+  // --- SUCCESS VIEW ---
   if (status === 'success') {
     return (
       <div className="bg-white p-12 rounded-3xl shadow-xl text-center max-w-md w-full animate-fade-in">
@@ -89,6 +93,7 @@ export default function CheckoutPage() {
     );
   }
 
+  // --- EMPTY CART VIEW ---
   if ($cartItems.length === 0) {
     return (
       <div className="text-center">
@@ -102,7 +107,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-5xl items-start">
+      
+      {/* LINKS: Formular */}
       <div className="flex-1 bg-white p-8 rounded-[24px] shadow-sm border border-gray-100 order-2 lg:order-1">
+        
         <div className="bg-gray-100 p-1 rounded-xl flex mb-8">
           <button
             type="button"
@@ -186,6 +194,7 @@ export default function CheckoutPage() {
         </form>
       </div>
 
+      {/* RECHTS: Zusammenfassung */}
       <div className="w-full lg:w-96 order-1 lg:order-2">
          <div className="bg-white p-6 rounded-[24px] shadow-sm border border-gray-100 sticky top-8">
             <h3 className="text-lg font-bold mb-6 border-b border-gray-100 pb-4 text-[#1d1d1f]">Übersicht</h3>
