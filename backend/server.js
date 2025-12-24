@@ -69,6 +69,10 @@ app.get('/api/stock', async (req, res) => {
   res.json(products);
 });
 
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server läuft auf Port ${PORT}`);
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Backend Server running on http://localhost:${PORT}`);
 });

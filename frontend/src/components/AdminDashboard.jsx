@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, MessageSquare, Check, Truck, XCircle, Trash2, Mail, Lock, Database } from 'lucide-react';
+import { Package, MessageSquare, Check, Truck, XCircle, Trash2, Mail, Lock, Database, ShoppingCart } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [password, setPassword] = useState('');
   const [isAuth, setIsAuth] = useState(false);
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'messages', 'stock'
+  const [activeTab, setActiveTab] = useState('orders'); 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +18,6 @@ export default function AdminDashboard() {
     if (!pwd) return;
     setLoading(true);
     try {
-      // Endpunkt je nach Tab wählen
       let endpoint = '/api/admin/orders';
       if (activeTab === 'messages') endpoint = '/api/admin/messages';
       if (activeTab === 'stock') endpoint = '/api/admin/stock';
@@ -45,14 +44,12 @@ export default function AdminDashboard() {
     setActiveTab(tab);
   };
 
-  // --- LAGERBESTAND SPEICHERN ---
   const handleUpdateStock = async (productId, stock) => {
     try {
       await axios.post(`http://localhost:5000/api/admin/stock`, 
         { productId, stock: parseInt(stock) },
         { headers: { 'x-admin-secret': password } }
       );
-      // Optional: Ein kleiner "Gespeichert" Effekt
     } catch (err) {
       alert("Fehler beim Speichern des Bestands.");
     }
@@ -116,24 +113,47 @@ export default function AdminDashboard() {
           
           {/* ORDERS TAB */}
           {activeTab === 'orders' && !loading && data.map(order => (
-            <div key={order._id} className="bg-white p-8 rounded-[28px] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-8 animate-in fade-in">
+            <div key={order._id} className="bg-white p-8 rounded-[28px] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start gap-8 animate-in fade-in">
                <div className="flex-1 w-full">
-                  <span className="text-[10px] font-black uppercase tracking-widest bg-orange-100 text-orange-600 px-3 py-1 rounded-full mb-4 inline-block">{order.status}</span>
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block ${
+                    order.status === 'pending' ? 'bg-orange-100 text-orange-600' : 
+                    order.status === 'shipped' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                  }`}>
+                    {order.status}
+                  </span>
                   <h3 className="font-bold text-2xl">{order.firstName} {order.lastName}</h3>
-                  <p className="text-gray-400">{order.address.street}, {order.address.zip} {order.address.city}</p>
+                  <p className="text-gray-400 mb-4">{order.address.street}, {order.address.zip} {order.address.city}</p>
+                  
+                  {/* PRODUKTLISTE ANZEIGEN */}
+                  <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <ShoppingCart size={12} /> Artikel
+                    </h4>
+                    <div className="space-y-2">
+                      {order.items && order.items.map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-sm border-b border-gray-200 pb-2 last:border-0 last:pb-0">
+                          <span className="font-bold text-[#1D1D1F]">
+                            {item.quantity || 1}x {item.name}
+                          </span>
+                          <span className="text-gray-400 font-mono text-xs">{item.id}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                </div>
-               <div className="flex flex-col items-end gap-4">
+
+               <div className="flex flex-col items-center md:items-end gap-4 min-w-[150px]">
                   <div className="text-3xl font-black">{order.totalAmount?.toFixed(2)}€</div>
                   <div className="flex gap-2">
-                    <button onClick={() => updateStatus(order._id, 'shipped')} className="p-3 bg-blue-50 text-blue-600 rounded-xl"><Truck size={20}/></button>
-                    <button onClick={() => updateStatus(order._id, 'completed')} className="p-3 bg-green-50 text-green-600 rounded-xl"><Check size={20}/></button>
-                    <button onClick={() => deleteOrder(order._id)} className="p-3 bg-gray-50 text-gray-400 rounded-xl"><Trash2 size={20}/></button>
+                    <button onClick={() => updateStatus(order._id, 'shipped')} title="Versenden" className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all"><Truck size={20}/></button>
+                    <button onClick={() => updateStatus(order._id, 'completed')} title="Abschließen" className="p-3 bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all"><Check size={20}/></button>
+                    <button onClick={() => deleteOrder(order._id)} title="Löschen" className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-red-600 hover:text-white transition-all"><Trash2 size={20}/></button>
                   </div>
                </div>
             </div>
           ))}
 
-          {/* MESSAGES TAB */}
+          {/* ... MESSAGES & STOCK TABS BLEIBEN GLEICH ... */}
           {activeTab === 'messages' && !loading && data.map(msg => (
             <div key={msg._id} className="bg-white p-8 rounded-[28px] border border-gray-100">
               <div className="flex justify-between mb-4">
@@ -144,12 +164,10 @@ export default function AdminDashboard() {
             </div>
           ))}
 
-          {/* STOCK TAB (Neu!) */}
           {activeTab === 'stock' && !loading && (
             <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
               <div className="grid grid-cols-1 gap-4">
                 {['VAPE12K', 'VAPE15K', 'prod_hardware_wallet'].map(id => {
-                  // Finde aktuellen Bestand in den geladenen Daten
                   const currentStock = data.find(p => p.productId === id)?.stock || 0;
                   return (
                     <div key={id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
