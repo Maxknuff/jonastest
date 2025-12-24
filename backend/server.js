@@ -22,7 +22,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. CORS Einstellungen (Einmalig und vollständig)
+// 1. CORS Einstellungen
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -41,7 +41,18 @@ app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
 
-// --- ADMIN ROUTES (Geschützt durch x-admin-secret) ---
+// --- BESTANDS-ROUTE (Nur einmal!) ---
+app.get('/api/stock', async (req, res) => {
+  try {
+    const Product = (await import('./models/Product.js')).default;
+    const products = await Product.find({}, 'productId stock');
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// --- ADMIN ROUTES ---
 app.get('/api/admin/orders', checkAdmin, getOrders);
 app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus);
 app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder);
@@ -52,27 +63,7 @@ app.delete('/api/admin/messages/:id', checkAdmin, deleteMessage);
 app.get('/api/admin/stock', checkAdmin, getStock);
 app.post('/api/admin/stock', checkAdmin, updateStock);
 
-app.get('/api/stock', async (req, res) => {
-  try {
-    // Importiere das Model, falls noch nicht geschehen
-    const Product = mongoose.model('Product'); 
-    const products = await Product.find({}, 'productId stock');
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-app.get('/api/stock', async (req, res) => {
-  const Product = (await import('./models/Product.js')).default;
-  const products = await Product.find({}, 'productId stock');
-  res.json(products);
-});
-
+// --- SERVER START (NUR EINMALIGER AUFRUF!) ---
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server läuft auf Port ${PORT}`);
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Backend Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server läuft auf Port ${PORT}`);
 });
