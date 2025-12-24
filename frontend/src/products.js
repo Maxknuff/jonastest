@@ -1,14 +1,26 @@
-import mongoose from 'mongoose';
+// Diese Datei enthält nur die Notfall-Daten.
+// KEIN React, KEIN HTML, KEINE Imports von Mongoose hier!
 
-const ProductSchema = new mongoose.Schema({
-  productId: { type: String, required: true, unique: true },
-  // Diese Felder haben gefehlt:
-  name: { type: String, required: true },
-  price: { type: Number, required: true },
-  image: { type: String, required: true },
-  description: { type: String },
-  stock: { type: Number, default: 0 },
-  lastUpdate: { type: Date, default: Date.now }
-});
-
-export default mongoose.model('Product', ProductSchema);
+export const products = [
+  { 
+    id: "VAPE12K", 
+    name: "RANDM TORNADO 12000", 
+    price: 59.90, 
+    image: "/products/VAPE12K.png",
+    description: "Der Bestseller mit 12.000 Zügen. Intensiver Geschmack und lange Akkulaufzeit."
+  },
+  { 
+    id: "VAPE15K", 
+    name: "RANDM TORNADO 15000", 
+    price: 29.90, 
+    image: "/products/VAPE15K.png",
+    description: "Das Upgrade für Profis. 15.000 Züge und einstellbarer Airflow für maximalen Dampf."
+  },
+  { 
+    id: "prod_hardware_wallet", 
+    name: "Cold Storage Stick", 
+    price: 149.00, 
+    image: "/products/stick.png",
+    description: "Maximale Sicherheit für deine Coins. Offline-Speicherung und verschlüsseltes Backup."
+  }
+];
