@@ -1,9 +1,9 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-// KORREKTUR 1: Hier heißt es jetzt updateCartQuantity (passend zur store.js)
+// WICHTIG: updateCartQuantity muss genau so heißen wie in store.js
 import { isCartOpen, cartItems, removeCartItem, updateCartQuantity } from '../store';
 import { motion, AnimatePresence } from 'framer-motion';
-// KORREKTUR 2: ShoppingBag hinzugefügt
+// FEHLER-FIX: ShoppingBag muss hier importiert sein!
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 export default function CheckoutOverlay() {
@@ -67,7 +67,6 @@ export default function CheckoutOverlay() {
                       
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center gap-3 bg-white rounded-lg px-2 py-1 shadow-sm border border-gray-100">
-                          {/* KORREKTUR 3: Hier nutzen wir jetzt updateCartQuantity */}
                           <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="p-1 hover:text-[#0071E3] transition">
                             <Minus size={14} />
                           </button>

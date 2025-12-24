@@ -4,18 +4,26 @@ import { searchQuery, stockLevels } from '../store';
 import ProductCard from './ProductCard';
 
 export default function ProductGrid({ products }) {
-  // FEHLER-FIX: Falls query undefined ist, nutzen wir einen leeren Text ''
+  // SICHERHEIT: Falls query undefined ist, nutzen wir einen leeren String
   const rawQuery = useStore(searchQuery);
   const query = (rawQuery || '').toLowerCase();
   
-  const $stockLevels = useStore(stockLevels);
+  const $stockLevels = useStore(stockLevels) || {};
 
-  // Sicherheits-Check: Falls gar keine Produkte da sind, nichts tun
-  if (!products) return null;
+  // Debugging: Zeigt in der Browser-Konsole (F12), was wirklich ankommt
+  console.log("ProductGrid geladen mit:", products);
 
-  // 1. Filtern (Suche) - Jetzt absturzsicher!
+  if (!products || products.length === 0) {
+    return (
+      <div className="col-span-full text-center py-20 text-gray-400">
+        <p className="text-xl">Lade Produkte...</p>
+        <p className="text-xs text-gray-300">(Falls dies lange bleibt: Server prüfen)</p>
+      </div>
+    );
+  }
+
+  // 1. Filtern (Suche) - Absturzsicher!
   const filteredProducts = products.filter(product => {
-    // Wenn Produkt keinen Namen hat, ignorieren wir es
     if (!product || !product.name) return false;
     return product.name.toLowerCase().includes(query);
   });
@@ -25,11 +33,8 @@ export default function ProductGrid({ products }) {
     const stockA = $stockLevels[a.id] !== undefined ? $stockLevels[a.id] : 999;
     const stockB = $stockLevels[b.id] !== undefined ? $stockLevels[b.id] : 999;
     
-    const isOutA = stockA <= 0;
-    const isOutB = stockB <= 0;
-
-    if (isOutA && !isOutB) return 1;
-    if (!isOutA && isOutB) return -1;
+    if (stockA <= 0 && stockB > 0) return 1;
+    if (stockA > 0 && stockB <= 0) return -1;
     return 0;
   });
 
@@ -42,6 +47,7 @@ export default function ProductGrid({ products }) {
       ) : (
         <div className="col-span-full text-center py-20 text-gray-400">
           <p className="text-xl">Keine Produkte gefunden.</p>
+          {query && <p className="text-sm">Suche: "{query}"</p>}
         </div>
       )}
     </div>

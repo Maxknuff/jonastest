@@ -5,42 +5,48 @@ import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
 import SupportOverlay from '../components/SupportOverlay.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 
-// Importiere das Fallback-Backup
+// 1. Fallback importieren
 import { products as fallbackProducts } from '../products.js';
 
 let shopProducts = [];
+let debugInfo = "";
 
 try {
-  // Automatische URL-Erkennung (Lokal vs. Live)
+  // 2. API URL
   const API_URL = import.meta.env.MODE === 'development' 
     ? 'http://localhost:5000' 
     : 'https://jonastest.onrender.com';
 
-  console.log("Versuche Produkte zu laden von:", `${API_URL}/api/products`);
+  console.log("Fetching from:", `${API_URL}/api/products`);
 
-  // Timeout hinzufügen, damit der Shop nicht ewig lädt, wenn Render schläft
+  // 3. Kurzer Timeout (3s)
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
 
   const response = await fetch(`${API_URL}/api/products`, { signal: controller.signal });
   clearTimeout(timeoutId);
-  
+
   if (response.ok) {
-    const dbProducts = await response.json();
-    // WICHTIG: Prüfen, ob wirklich Daten zurückkamen
-    if (Array.isArray(dbProducts) && dbProducts.length > 0) {
-      console.log("Datenbank-Produkte geladen:", dbProducts.length);
-      shopProducts = dbProducts;
+    const data = await response.json();
+    if (Array.isArray(data) && data.length > 0) {
+      shopProducts = data;
     } else {
-      console.log("Datenbank ist leer oder ungültig, nutze Fallback.");
+      console.log("DB leer, nutze Fallback.");
       shopProducts = fallbackProducts;
+      debugInfo = "Modus: Fallback (DB leer)";
     }
   } else {
-    console.error("Server antwortet mit Fehler:", response.status);
-    shopProducts = fallbackProducts;
+    throw new Error("Server Fehler");
   }
+
 } catch (error) {
-  console.error("API nicht erreichbar (Server schläft?), nutze Fallback.", error);
+  console.error("API Fehler:", error);
+  shopProducts = fallbackProducts;
+  debugInfo = "Modus: Fallback (Server offline)";
+}
+
+// Doppelte Sicherheit: Niemals leer übergeben
+if (!shopProducts || shopProducts.length === 0) {
   shopProducts = fallbackProducts;
 }
 ---
@@ -70,6 +76,7 @@ try {
 
       <div class="flex items-center justify-between mb-8">
         <h2 class="text-3xl font-bold tracking-tight">Shop</h2>
+        {debugInfo && <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">{debugInfo}</span>}
       </div>
       
       <ProductGrid client:only="react" products={shopProducts} />
