@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // NEU: State für das Produkt-Formular
+  // State für das Produkt-Formular
   const [newProduct, setNewProduct] = useState({
     productId: '', 
     name: '', 
@@ -43,13 +43,8 @@ export default function AdminDashboard() {
       let endpoint = '/api/admin/orders';
       if (activeTab === 'messages') endpoint = '/api/admin/messages';
       if (activeTab === 'stock') endpoint = '/api/admin/stock';
-      
-      // Für den "Produkte erstellen"-Tab brauchen wir keine Daten laden
-      if (activeTab === 'products') {
-        setLoading(false);
-        setIsAuth(true);
-        return; 
-      }
+      // FIX: Jetzt laden wir auch Daten für Produkte!
+      if (activeTab === 'products') endpoint = '/api/admin/products';
       
       const res = await axios.get(`${API_URL}${endpoint}`, {
         headers: { 'x-admin-secret': pwd }
@@ -75,7 +70,6 @@ export default function AdminDashboard() {
     setActiveTab(tab);
   };
 
-  // NEU: Produkt erstellen Funktion
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
@@ -85,6 +79,8 @@ export default function AdminDashboard() {
       alert('Produkt erfolgreich erstellt!');
       // Formular zurücksetzen
       setNewProduct({ productId: '', name: '', price: '', image: '', description: '', stock: 0 });
+      // Liste neu laden
+      fetchData(password);
     } catch (err) {
       alert(err.response?.data?.message || 'Fehler beim Erstellen des Produkts');
     }
@@ -152,10 +148,8 @@ export default function AdminDashboard() {
             <button onClick={() => changeTab('orders')} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'orders' ? 'bg-white shadow-md' : 'text-gray-500'}`}>Orders</button>
             <button onClick={() => changeTab('messages')} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'messages' ? 'bg-white shadow-md' : 'text-gray-500'}`}>Support</button>
             <button onClick={() => changeTab('stock')} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'stock' ? 'bg-white shadow-md' : 'text-gray-500'}`}>Bestand</button>
-            
-            {/* NEUER TAB-BUTTON */}
             <button onClick={() => changeTab('products')} className={`px-6 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${activeTab === 'products' ? 'bg-black text-white shadow-md' : 'text-gray-500'}`}>
-              <Plus size={16}/> Neues Produkt
+              <Plus size={16}/> Produkte
             </button>
           </div>
         </div>
@@ -219,10 +213,6 @@ export default function AdminDashboard() {
           {activeTab === 'stock' && !loading && (
             <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm">
               <div className="grid grid-cols-1 gap-4">
-                {/* Hinweis: Hier werden nur die Produkte angezeigt, die schon eine Stock-Entry haben oder im Array stehen */}
-                {/* Für dynamische Produkte wird das Array 'data' genutzt, das von getAllProducts/getStock befüllt wird */}
-                {/* Falls du hier eine feste Liste hattest, wird diese nun durch die API-Daten ersetzt, sobald wir getStock anpassen. */}
-                {/* Vorläufige Anzeige basierend auf den geladenen Daten: */}
                 {data.map(p => (
                     <div key={p.productId} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
                       <div>
@@ -241,97 +231,81 @@ export default function AdminDashboard() {
                     </div>
                   ))
                 }
-                {/* Fallback für leere Daten im Stock Tab */}
                 {data.length === 0 && <p className="text-center text-gray-400">Keine Bestandsdaten verfügbar.</p>}
               </div>
             </div>
           )}
 
-          {/* --- NEUER PRODUKT TAB INHALT --- */}
+          {/* --- NEUER PRODUKT TAB MIT LISTE --- */}
           {activeTab === 'products' && (
-            <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 max-w-2xl mx-auto animate-in fade-in">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Plus className="text-[#0071E3]"/> Produkt hinzufügen</h2>
-              <form onSubmit={handleCreateProduct} className="space-y-4">
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Produkt ID</label>
-                    <input 
-                      required 
-                      placeholder="z.B. VAPE20K" 
-                      value={newProduct.productId} 
-                      onChange={e => setNewProduct({...newProduct, productId: e.target.value})} 
-                      className="w-full p-3 bg-gray-50 rounded-xl font-mono focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" 
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Preis (€)</label>
-                    <input 
-                      required 
-                      type="number" 
-                      step="0.01" 
-                      placeholder="29.99" 
-                      value={newProduct.price} 
-                      onChange={e => setNewProduct({...newProduct, price: e.target.value})} 
-                      className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" 
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Name</label>
-                  <input 
-                    required 
-                    placeholder="Produktname" 
-                    value={newProduct.name} 
-                    onChange={e => setNewProduct({...newProduct, name: e.target.value})} 
-                    className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" 
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Bild URL / Pfad</label>
-                  <div className="flex gap-2">
-                    <input 
-                      required 
-                      placeholder="/products/bild.png" 
-                      value={newProduct.image} 
-                      onChange={e => setNewProduct({...newProduct, image: e.target.value})} 
-                      className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" 
-                    />
-                    {/* Bild Vorschau */}
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center overflow-hidden border border-gray-200">
-                       {newProduct.image ? <img src={newProduct.image} className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'} alt="Vorschau" /> : <ImageIcon size={20} className="text-gray-300"/>}
+            <div className="space-y-8">
+              {/* 1. Das Formular */}
+              <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 max-w-3xl mx-auto animate-in fade-in">
+                <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><Plus className="text-[#0071E3]"/> Produkt erstellen</h2>
+                <form onSubmit={handleCreateProduct} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Produkt ID (einzigartig)</label>
+                      <input required placeholder="z.B. VAPE20K" value={newProduct.productId} onChange={e => setNewProduct({...newProduct, productId: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-mono focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Preis (€)</label>
+                      <input required type="number" step="0.01" placeholder="29.99" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" />
                     </div>
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1 ml-1">* Bild muss im 'public/products' Ordner liegen oder eine URL sein.</p>
-                </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Name</label>
+                    <input required placeholder="Produktname" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Bild URL / Pfad</label>
+                    <div className="flex gap-2">
+                      <input required placeholder="/products/bild.png" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" />
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg shrink-0 flex items-center justify-center overflow-hidden border border-gray-200">
+                         {newProduct.image ? <img src={newProduct.image} className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'} alt="Vorschau" /> : <ImageIcon size={20} className="text-gray-300"/>}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                     <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Beschreibung</label>
+                     <textarea placeholder="Beschreibung..." value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl h-24 focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition resize-none" />
+                  </div>
+                  <div>
+                     <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Start-Bestand</label>
+                     <input type="number" placeholder="0" value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" />
+                  </div>
+                  <button className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-[#0071E3] transition-colors mt-4 flex justify-center items-center gap-2">
+                    <Plus size={20} /> Produkt speichern
+                  </button>
+                </form>
+              </div>
 
-                <div>
-                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Beschreibung</label>
-                   <textarea 
-                      placeholder="Beschreibung..." 
-                      value={newProduct.description} 
-                      onChange={e => setNewProduct({...newProduct, description: e.target.value})} 
-                      className="w-full p-3 bg-gray-50 rounded-xl h-24 focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition resize-none" 
-                   />
+              {/* 2. Die Liste der existierenden Produkte */}
+              {!loading && (
+                <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 max-w-3xl mx-auto animate-in slide-in-from-bottom-4">
+                  <h3 className="text-xl font-bold mb-6 border-b border-gray-100 pb-4">Aktuelle Datenbank-Produkte ({data.length})</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    {data.map((p) => (
+                      <div key={p.id || p.productId} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors">
+                        <div className="w-16 h-16 bg-white rounded-xl border border-gray-200 p-2 flex items-center justify-center overflow-hidden shrink-0">
+                          <img src={p.image} alt={p.name} className="w-full h-full object-contain" onError={(e) => e.target.style.display='none'} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-[#1D1D1F] truncate">{p.name}</div>
+                          <div className="text-xs text-gray-400 font-mono uppercase tracking-wider">{p.id || p.productId}</div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-bold text-lg">{p.price ? parseFloat(p.price).toFixed(2) : '0.00'}€</div>
+                          <div className={`text-xs font-bold ${p.stock > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                            {p.stock > 0 ? `${p.stock} auf Lager` : 'Ausverkauft'}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {data.length === 0 && <p className="text-gray-400 text-center py-4">Noch keine Produkte in der Datenbank.</p>}
+                  </div>
                 </div>
-
-                <div>
-                   <label className="text-xs font-bold text-gray-400 uppercase ml-1 block mb-1">Start-Bestand</label>
-                   <input 
-                      type="number" 
-                      placeholder="0" 
-                      value={newProduct.stock} 
-                      onChange={e => setNewProduct({...newProduct, stock: e.target.value})} 
-                      className="w-full p-3 bg-gray-50 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#0071E3] outline-none transition" 
-                   />
-                </div>
-
-                <button className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-[#0071E3] transition-colors mt-4 flex justify-center items-center gap-2">
-                  <Plus size={20} /> Produkt erstellen
-                </button>
-              </form>
+              )}
             </div>
           )}
 
