@@ -11,7 +11,9 @@ export default function CheckoutPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [orderId, setOrderId] = useState(null);
 
-  // START-MODUS: Jetzt 'ONSITE' (Barzahlung) als Standard, weil es an erster Stelle steht
+  // --- NEU: DYNAMISCHE API URL ---
+  const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000';
+
   const [method, setMethod] = useState('ONSITE'); 
   
   const [formData, setFormData] = useState({
@@ -37,9 +39,8 @@ export default function CheckoutPage() {
     setErrorMsg('');
 
     try {
-      // Payload bauen
       const payload = {
-        paymentMethod: method, // 'ONSITE' = Barzahlung, 'ONLINE' = Versand
+        paymentMethod: method,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -53,10 +54,8 @@ export default function CheckoutPage() {
         items: $cartItems.flatMap(item => Array(item.quantity).fill({ id: item.id, name: item.name }))
       };
 
-      console.log("Sende Daten an Backend:", payload); // Debugging
-
-      // WICHTIG: Die URL muss exakt stimmen. 
-      const response = await axios.post('http://localhost:5000/api/orders', payload);
+      // --- KORRIGIERT: Nutzt jetzt API_URL statt localhost ---
+      const response = await axios.post(`${API_URL}/api/orders`, payload);
 
       if (response.data.success) {
         setOrderId(response.data.orderId);
@@ -66,16 +65,15 @@ export default function CheckoutPage() {
     } catch (err) {
       console.error("API Fehler:", err);
       setStatus('error');
-      // Bessere Fehlermeldung anzeigen
       if (err.code === "ERR_NETWORK") {
-        setErrorMsg('Der Server ist nicht erreichbar. Läuft das Backend?');
+        setErrorMsg('Der Server ist nicht erreichbar. Bitte prüfe deine Internetverbindung oder versuche es später erneut.');
       } else {
         setErrorMsg(err.response?.data?.message || 'Ein unbekannter Fehler ist aufgetreten.');
       }
     }
   };
 
-  // --- SUCCESS VIEW ---
+  // --- REST DES CODES (SUCCESS & EMPTY VIEWS) BLEIBT GLEICH ---
   if (status === 'success') {
     return (
       <div className="bg-white p-12 rounded-3xl shadow-xl text-center max-w-md w-full animate-fade-in">
@@ -91,7 +89,6 @@ export default function CheckoutPage() {
     );
   }
 
-  // --- EMPTY CART VIEW ---
   if ($cartItems.length === 0) {
     return (
       <div className="text-center">
@@ -105,11 +102,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full max-w-5xl items-start">
-      
-      {/* LINKS: Formular */}
       <div className="flex-1 bg-white p-8 rounded-[24px] shadow-sm border border-gray-100 order-2 lg:order-1">
-        
-        {/* NEUE SWITCH REIHENFOLGE: Barzahlung zuerst */}
         <div className="bg-gray-100 p-1 rounded-xl flex mb-8">
           <button
             type="button"
@@ -132,99 +125,38 @@ export default function CheckoutPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {/* PERSÖNLICHE DATEN */}
           <div>
             <h3 className="text-lg font-bold mb-4 text-[#1d1d1f]">Deine Daten</h3>
             <div className="grid grid-cols-2 gap-4">
-              <input 
-                required 
-                name="firstName" 
-                placeholder="Vorname" 
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-              />
-              <input 
-                name="lastName" 
-                placeholder="Nachname" 
-                required={method === 'ONLINE'} // Nur bei Versand Pflicht
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-              />
+              <input required name="firstName" placeholder="Vorname" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
+              <input name="lastName" placeholder="Nachname" required={method === 'ONLINE'} onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
             </div>
           </div>
 
-          {/* KONTAKT (Wechselt je nach Methode) */}
           <AnimatePresence mode="wait">
             {method === 'ONLINE' ? (
-              <motion.div 
-                key="online-contact"
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                className="space-y-4"
-              >
-                 <input 
-                  type="email" 
-                  name="email" 
-                  required 
-                  placeholder="E-Mail Adresse (Bestellbestätigung)" 
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-                />
+              <motion.div key="online-contact" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
+                 <input type="email" name="email" required placeholder="E-Mail Adresse" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               </motion.div>
             ) : (
-              <motion.div 
-                key="onsite-contact"
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                className="space-y-4"
-              >
-                 <div className="bg-blue-50 text-[#0071E3] p-4 rounded-xl text-sm font-medium">
-                    📍 Zahle sicher & anonym bei Übergabe.
-                 </div>
-                 <input 
-                  type="tel" 
-                  name="phone" 
-                  required 
-                  placeholder="Handynummer / Signal / Telegram (für Treffpunkt)" 
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-                />
+              <motion.div key="onsite-contact" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
+                 <div className="bg-blue-50 text-[#0071E3] p-4 rounded-xl text-sm font-medium">📍 Zahle sicher & anonym bei Übergabe.</div>
+                 <input type="tel" name="phone" required placeholder="Handynummer / Signal / Telegram" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* ADRESSE (Immer sichtbar) */}
           <div>
-            <h3 className="text-lg font-bold mb-4 mt-6 text-[#1d1d1f]">
-                {method === 'ONLINE' ? 'Lieferadresse' : 'Rechnungsadresse (Optional)'}
-            </h3>
+            <h3 className="text-lg font-bold mb-4 mt-6 text-[#1d1d1f]">{method === 'ONLINE' ? 'Lieferadresse' : 'Rechnungsadresse (Optional)'}</h3>
             <div className="space-y-4">
-              <input 
-                name="street" 
-                required 
-                placeholder="Straße & Hausnummer" 
-                onChange={handleChange}
-                className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-              />
+              <input name="street" required placeholder="Straße & Hausnummer" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               <div className="grid grid-cols-3 gap-4">
-                <input 
-                  name="zip" 
-                  required 
-                  placeholder="PLZ" 
-                  onChange={handleChange}
-                  className="col-span-1 bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-                />
-                <input 
-                  name="city" 
-                  required 
-                  placeholder="Stadt" 
-                  onChange={handleChange}
-                  className="col-span-2 bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none"
-                />
+                <input name="zip" required placeholder="PLZ" onChange={handleChange} className="col-span-1 bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
+                <input name="city" required placeholder="Stadt" onChange={handleChange} className="col-span-2 bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               </div>
             </div>
           </div>
 
-          {/* BEZAHLUNG (Nur bei Versand sichtbar) */}
           {method === 'ONLINE' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <h3 className="text-lg font-bold mb-4 mt-6 text-[#1d1d1f]">Zahlungsmethode</h3>
@@ -241,7 +173,6 @@ export default function CheckoutPage() {
             </motion.div>
           )}
 
-          {/* FEHLERMELDUNG */}
           {status === 'error' && (
             <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3 text-sm font-medium animate-shake">
                <AlertCircle size={20} className="shrink-0" />
@@ -249,26 +180,12 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          {/* ABSENDEN BUTTON */}
-          <button 
-            type="submit" 
-            disabled={status === 'loading'}
-            className="w-full bg-[#0071E3] hover:bg-[#0077ED] text-white font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-8"
-          >
-            {status === 'loading' ? (
-              <span className="animate-pulse">Verarbeite Bestellung...</span>
-            ) : (
-              <>
-                <Lock size={20} />
-                {method === 'ONLINE' ? `Jetzt zahlen (${total.toFixed(2)}€)` : 'Kauf abschließen'}
-              </>
-            )}
+          <button type="submit" disabled={status === 'loading'} className="w-full bg-[#0071E3] hover:bg-[#0077ED] text-white font-bold py-4 rounded-xl text-lg shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-8">
+            {status === 'loading' ? <span className="animate-pulse">Verarbeite Bestellung...</span> : <><Lock size={20} /> {method === 'ONLINE' ? `Jetzt zahlen (${total.toFixed(2)}€)` : 'Kauf abschließen'}</>}
           </button>
-
         </form>
       </div>
 
-      {/* RECHTS: Zusammenfassung */}
       <div className="w-full lg:w-96 order-1 lg:order-2">
          <div className="bg-white p-6 rounded-[24px] shadow-sm border border-gray-100 sticky top-8">
             <h3 className="text-lg font-bold mb-6 border-b border-gray-100 pb-4 text-[#1d1d1f]">Übersicht</h3>
@@ -282,20 +199,16 @@ export default function CheckoutPage() {
                         <div className="font-medium text-[#1d1d1f]">{item.name}</div>
                         <div className="text-gray-500">Menge: {item.quantity}</div>
                      </div>
-                     <div className="font-medium">
-                        {(item.price * item.quantity).toFixed(2)}€
-                     </div>
+                     <div className="font-medium">{(item.price * item.quantity).toFixed(2)}€</div>
                   </div>
                ))}
             </div>
-            
             <div className="flex justify-between items-center text-xl font-bold border-t border-gray-100 pt-6 text-[#1d1d1f]">
                <span>Gesamt</span>
                <span>{total.toFixed(2)}€</span>
             </div>
          </div>
       </div>
-
     </div>
   );
 }
