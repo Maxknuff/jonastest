@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
-const productSchema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
   productId: { type: String, required: true, unique: true },
-  // DIESE FELDER SIND NEU UND WICHTIG:
+  // DIESE NEUEN FELDER FEHLEN NOCH BEI DIR:
   name: { type: String, required: true },
   price: { type: Number, required: true },
   image: { type: String, required: true },
@@ -11,4 +11,4 @@ const productSchema = new mongoose.Schema({
   lastUpdate: { type: Date, default: Date.now }
 });
 
-export default mongoose.model('Product', productSchema);
+export default mongoose.model('Product', ProductSchema);
