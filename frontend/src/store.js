@@ -3,16 +3,16 @@ import { persistentAtom } from '@nanostores/persistent';
 
 // --- FEHLERRESISTENTE URL-LOGIK ---
 const getApiUrl = () => {
-  // 1. Check, ob wir im Browser sind
-  if (typeof window !== "undefined") {
-    // 2. Wenn die URL 'vercel.app' oder deine echte Domain enthält
+  // WICHTIG: Erst prüfen, ob wir ÜBERHAUPT im Browser sind
+  if (typeof window !== "undefined" && window.location) {
     if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
       return "https://jonastest.onrender.com";
     }
   }
-  // 3. Fallback: Nutze Umgebungsvariable oder lokal localhost
-  return import.meta.env.PUBLIC_API_URL || 'http://localhost:5000';
+  // Wenn wir auf dem Server sind oder lokal:
+  return "http://localhost:5000"; 
 };
+
 
 const API_URL = getApiUrl();
 console.log("🚀 Shop nutzt API:", API_URL); 

@@ -7,12 +7,14 @@ import { Lock, Truck, Banknote, CheckCircle, AlertCircle, ArrowLeft } from 'luci
 
 // --- FEHLERRESISTENTE URL-LOGIK (Identisch mit store.js) ---
 const getApiUrl = () => {
-  if (typeof window !== "undefined") {
+  // WICHTIG: Erst prüfen, ob wir ÜBERHAUPT im Browser sind
+  if (typeof window !== "undefined" && window.location) {
     if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
       return "https://jonastest.onrender.com";
     }
   }
-  return import.meta.env.PUBLIC_API_URL || 'http://localhost:5000';
+  // Wenn wir auf dem Server sind oder lokal:
+  return "http://localhost:5000"; 
 };
 
 const API_URL = getApiUrl();
