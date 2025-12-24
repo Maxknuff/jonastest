@@ -18,6 +18,12 @@ export function getStaticPaths() {
 const { product } = Astro.props;
 ---
 
+---
+// Beispiel in deiner index.astro oder checkout.astro
+---
+<Header client:only="react" />
+<CheckoutPage client:only="react" />
+
 <html lang="de">
   <head>
     <meta charset="utf-8" />

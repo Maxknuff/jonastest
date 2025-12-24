@@ -1,8 +1,21 @@
 import { atom } from 'nanostores';
 import { persistentAtom } from '@nanostores/persistent';
 
-// Die API-URL wird automatisch von Vercel (online) oder deiner .env (lokal) genommen
-const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:5000';
+// --- FEHLERRESISTENTE URL-LOGIK ---
+const getApiUrl = () => {
+  // 1. Check, ob wir im Browser sind
+  if (typeof window !== "undefined") {
+    // 2. Wenn die URL 'vercel.app' oder deine echte Domain enthält
+    if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
+      return "https://jonastest.onrender.com";
+    }
+  }
+  // 3. Fallback: Nutze Umgebungsvariable oder lokal localhost
+  return import.meta.env.PUBLIC_API_URL || 'http://localhost:5000';
+};
+
+const API_URL = getApiUrl();
+console.log("🚀 Shop nutzt API:", API_URL); 
 
 // UI States
 export const isCartOpen = atom(false);

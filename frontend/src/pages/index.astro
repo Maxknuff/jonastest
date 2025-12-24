@@ -2,6 +2,12 @@
 // CSS laden
 import '../styles.css';
 
+---
+// Beispiel in deiner index.astro oder checkout.astro
+---
+<Header client:only="react" />
+<CheckoutPage client:only="react" />
+
 // Komponenten importieren
 import Header from '../components/Header.jsx';          // NEU
 import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
