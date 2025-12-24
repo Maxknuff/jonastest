@@ -7,14 +7,12 @@ import { Lock, Truck, Banknote, CheckCircle, AlertCircle, ArrowLeft } from 'luci
 
 // --- FEHLERRESISTENTE URL-LOGIK (Identisch mit store.js) ---
 const getApiUrl = () => {
-  // WICHTIG: Erst prüfen, ob wir ÜBERHAUPT im Browser sind
   if (typeof window !== "undefined" && window.location) {
     if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
       return "https://jonastest.onrender.com";
     }
   }
-  // Wenn wir auf dem Server sind oder lokal:
-  return "http://localhost:5000"; 
+  return "http://localhost:5000";
 };
 
 const API_URL = getApiUrl();
@@ -53,7 +51,8 @@ export default function CheckoutPage() {
       const payload = {
         paymentMethod: method,
         firstName: formData.firstName,
-        lastName: formData.lastName,
+        // Bei ONSITE wird kein Nachname gesendet, wir senden einen leeren String oder den Vornamen als Fallback
+        lastName: method === 'ONSITE' ? '' : formData.lastName,
         email: formData.email,
         phone: formData.phone,
         address: {
@@ -67,7 +66,6 @@ export default function CheckoutPage() {
 
       console.log("Sende Bestellung an:", `${API_URL}/api/orders`);
 
-      // Nutzt nun die sicher ermittelte API_URL
       const response = await axios.post(`${API_URL}/api/orders`, payload);
 
       if (response.data.success) {
@@ -143,8 +141,25 @@ export default function CheckoutPage() {
           <div>
             <h3 className="text-lg font-bold mb-4 text-[#1d1d1f]">Deine Daten</h3>
             <div className="grid grid-cols-2 gap-4">
-              <input required name="firstName" placeholder="Vorname" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
-              <input name="lastName" placeholder="Nachname" required={method === 'ONLINE'} onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
+              {/* ÄNDERUNG: Name/Vorname Logik */}
+              <input 
+                required 
+                name="firstName" 
+                placeholder={method === 'ONSITE' ? "Name" : "Vorname"} 
+                onChange={handleChange} 
+                className={`bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none ${method === 'ONSITE' ? 'col-span-2 w-full' : 'w-full'}`} 
+              />
+              
+              {/* ÄNDERUNG: Nachname nur bei ONLINE sichtbar */}
+              {method === 'ONLINE' && (
+                <input 
+                  name="lastName" 
+                  placeholder="Nachname" 
+                  required 
+                  onChange={handleChange} 
+                  className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" 
+                />
+              )}
             </div>
           </div>
 
@@ -156,13 +171,15 @@ export default function CheckoutPage() {
             ) : (
               <motion.div key="onsite-contact" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
                  <div className="bg-blue-50 text-[#0071E3] p-4 rounded-xl text-sm font-medium">📍 Zahle sicher & anonym bei Übergabe.</div>
-                 <input type="tel" name="phone" required placeholder="Handynummer / Signal / Telegram" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
+                 {/* ÄNDERUNG: Placeholder Text angepasst */}
+                 <input type="tel" name="phone" required placeholder="Handynummer/ andere kontakt möglichkeit" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               </motion.div>
             )}
           </AnimatePresence>
 
           <div>
-            <h3 className="text-lg font-bold mb-4 mt-6 text-[#1d1d1f]">{method === 'ONLINE' ? 'Lieferadresse' : 'Rechnungsadresse (Optional)'}</h3>
+            {/* ÄNDERUNG: Immer "Lieferadresse" anzeigen */}
+            <h3 className="text-lg font-bold mb-4 mt-6 text-[#1d1d1f]">Lieferadresse</h3>
             <div className="space-y-4">
               <input name="street" required placeholder="Straße & Hausnummer" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               <div className="grid grid-cols-3 gap-4">
