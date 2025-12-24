@@ -4,32 +4,31 @@ import { searchQuery, stockLevels } from '../store';
 import ProductCard from './ProductCard';
 
 export default function ProductGrid({ products }) {
+  // Sicherstellen, dass query immer ein String ist
   const rawQuery = useStore(searchQuery);
   const query = (rawQuery || '').toLowerCase();
   
-  const $stockLevels = useStore(stockLevels) || {};
+  const $stockLevels = useStore(stockLevels);
 
-  // Debugging: Zeigt in der Konsole an, ob Produkte ankommen
-  if (!products || products.length === 0) {
-    console.log("ProductGrid: Keine Produkte erhalten.");
-    return (
-      <div className="col-span-full text-center py-20 text-gray-400">
-        <p className="text-xl">Keine Produkte gefunden.</p>
-      </div>
-    );
-  }
+  if (!products) return null;
 
+  // FIX: Filtern (Absturzsicher!)
   const filteredProducts = products.filter(product => {
+    // Wenn Produkt oder Name fehlt, überspringen
     if (!product || !product.name) return false;
     return product.name.toLowerCase().includes(query);
   });
 
+  // Sortieren
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     const stockA = $stockLevels[a.id] !== undefined ? $stockLevels[a.id] : 999;
     const stockB = $stockLevels[b.id] !== undefined ? $stockLevels[b.id] : 999;
-    
-    if (stockA <= 0 && stockB > 0) return 1;
-    if (stockA > 0 && stockB <= 0) return -1;
+
+    const isOutA = stockA <= 0;
+    const isOutB = stockB <= 0;
+
+    if (isOutA && !isOutB) return 1;
+    if (!isOutA && isOutB) return -1;
     return 0;
   });
 
@@ -41,7 +40,7 @@ export default function ProductGrid({ products }) {
         ))
       ) : (
         <div className="col-span-full text-center py-20 text-gray-400">
-          <p className="text-xl">Keine Ergebnisse für "{query}"</p>
+          <p className="text-xl">Keine Produkte gefunden für "{query}"</p>
         </div>
       )}
     </div>
