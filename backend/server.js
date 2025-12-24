@@ -57,6 +57,12 @@ mongoose.connect(process.env.MONGO_URI)
 app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
+app.get('/', (req, res) => res.send('SECURE. API is running...'));
+app.post('/api/orders', createOrder);
+app.post('/api/support', createMessage);
+app.get('/api/products', getAllProducts); // Öffentliche Liste
+app.get('/api/stock', getStock)
+
 
 // Route für Produkte
 app.get('/api/products', getAllProducts);
@@ -76,8 +82,8 @@ app.get('/api/admin/stock', checkAdmin, getStock);
 app.post('/api/admin/stock', checkAdmin, updateStock);
 
 // Route zum Erstellen neuer Produkte
-app.post('/api/admin/products', checkAdmin, createProduct);
-
+app.post('/api/admin/products', checkAdmin, createProduct); // Erstellen (gab es schon)
+app.get('/api/admin/products', checkAdmin, getAllProducts);
 // SERVER START
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server läuft auf Port ${PORT}`);
