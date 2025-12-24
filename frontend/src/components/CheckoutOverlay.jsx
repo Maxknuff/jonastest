@@ -1,9 +1,9 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-// WICHTIG: updateCartQuantity muss genau so heißen wie in store.js
+// WICHTIG: updateCartQuantity importieren (nicht updateCartItemQuantity)
 import { isCartOpen, cartItems, removeCartItem, updateCartQuantity } from '../store';
 import { motion, AnimatePresence } from 'framer-motion';
-// FEHLER-FIX: ShoppingBag muss hier importiert sein!
+// WICHTIG: ShoppingBag muss hier importiert sein!
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 export default function CheckoutOverlay() {

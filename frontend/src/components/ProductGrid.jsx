@@ -4,31 +4,26 @@ import { searchQuery, stockLevels } from '../store';
 import ProductCard from './ProductCard';
 
 export default function ProductGrid({ products }) {
-  // SICHERHEIT: Falls query undefined ist, nutzen wir einen leeren String
   const rawQuery = useStore(searchQuery);
   const query = (rawQuery || '').toLowerCase();
   
   const $stockLevels = useStore(stockLevels) || {};
 
-  // Debugging: Zeigt in der Browser-Konsole (F12), was wirklich ankommt
-  console.log("ProductGrid geladen mit:", products);
-
+  // Debugging: Zeigt in der Konsole an, ob Produkte ankommen
   if (!products || products.length === 0) {
+    console.log("ProductGrid: Keine Produkte erhalten.");
     return (
       <div className="col-span-full text-center py-20 text-gray-400">
-        <p className="text-xl">Lade Produkte...</p>
-        <p className="text-xs text-gray-300">(Falls dies lange bleibt: Server prüfen)</p>
+        <p className="text-xl">Keine Produkte gefunden.</p>
       </div>
     );
   }
 
-  // 1. Filtern (Suche) - Absturzsicher!
   const filteredProducts = products.filter(product => {
     if (!product || !product.name) return false;
     return product.name.toLowerCase().includes(query);
   });
 
-  // 2. Sortieren (Ausverkaufte nach hinten)
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     const stockA = $stockLevels[a.id] !== undefined ? $stockLevels[a.id] : 999;
     const stockB = $stockLevels[b.id] !== undefined ? $stockLevels[b.id] : 999;
@@ -46,8 +41,7 @@ export default function ProductGrid({ products }) {
         ))
       ) : (
         <div className="col-span-full text-center py-20 text-gray-400">
-          <p className="text-xl">Keine Produkte gefunden.</p>
-          {query && <p className="text-sm">Suche: "{query}"</p>}
+          <p className="text-xl">Keine Ergebnisse für "{query}"</p>
         </div>
       )}
     </div>
