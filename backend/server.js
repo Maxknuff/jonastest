@@ -15,8 +15,8 @@ import {
   deleteOrder, 
   getStock, 
   updateStock,
-  createProduct,   // <--- Komma wichtig!
-  getAllProducts   // <--- Komma wichtig!
+  createProduct,   // <--- HIER hat das Komma gefehlt!
+  getAllProducts   // <--- Das muss auch rein
 } from './controllers/adminController.js';
 
 dotenv.config();
@@ -58,8 +58,11 @@ app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
 
-// Route damit der Shop Produkte laden kann
+// Route für Produkte
 app.get('/api/products', getAllProducts);
+
+// Route für Bestand (Fix für den 404 Fehler)
+app.get('/api/stock', getStock);
 
 // --- ADMIN ROUTEN ---
 app.get('/api/admin/orders', checkAdmin, getOrders);
