@@ -5,29 +5,43 @@ import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
 import SupportOverlay from '../components/SupportOverlay.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 
-// HIER: Daten vom Server laden statt hardcoden
+// Importiere das Fallback-Backup
+import { products as fallbackProducts } from '../products.js';
+
 let shopProducts = [];
+
 try {
-  // Wählt automatisch die richtige API (Lokal oder Online)
+  // Automatische URL-Erkennung (Lokal vs. Live)
   const API_URL = import.meta.env.MODE === 'development' 
     ? 'http://localhost:5000' 
     : 'https://jonastest.onrender.com';
 
-  const response = await fetch(`${API_URL}/api/products`);
+  console.log("Versuche Produkte zu laden von:", `${API_URL}/api/products`);
+
+  // Timeout hinzufügen, damit der Shop nicht ewig lädt, wenn Render schläft
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 Sekunden Timeout
+
+  const response = await fetch(`${API_URL}/api/products`, { signal: controller.signal });
+  clearTimeout(timeoutId);
+  
   if (response.ok) {
-    shopProducts = await response.json();
+    const dbProducts = await response.json();
+    // WICHTIG: Prüfen, ob wirklich Daten zurückkamen
+    if (Array.isArray(dbProducts) && dbProducts.length > 0) {
+      console.log("Datenbank-Produkte geladen:", dbProducts.length);
+      shopProducts = dbProducts;
+    } else {
+      console.log("Datenbank ist leer oder ungültig, nutze Fallback.");
+      shopProducts = fallbackProducts;
+    }
   } else {
-    console.error("Fehler beim Laden der Produkte");
+    console.error("Server antwortet mit Fehler:", response.status);
+    shopProducts = fallbackProducts;
   }
 } catch (error) {
-  console.error("API nicht erreichbar");
-}
-
-// Fallback, falls DB leer ist oder Server down
-if (!shopProducts || shopProducts.length === 0) {
-  shopProducts = [
-    { id: "VAPE12K", name: "RANDM TORNADO 12000 (Fallback)", price: 59.90, image: "/products/VAPE12K.png", description: "Datenbank nicht erreichbar." }
-  ];
+  console.error("API nicht erreichbar (Server schläft?), nutze Fallback.", error);
+  shopProducts = fallbackProducts;
 }
 ---
 

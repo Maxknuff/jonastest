@@ -1,5 +1,5 @@
-// Diese Datei dient nur als Fallback, falls der Server nicht erreichbar ist.
-// KEINE Imports von Mongoose oder Backend-Code hier!
+// Fallback-Produkte, falls der Server nicht erreichbar ist.
+// WICHTIG: Keine Imports von 'mongoose' hier!
 
 export const products = [
   { 

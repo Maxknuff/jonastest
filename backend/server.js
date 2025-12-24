@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+// Importiere alle Controller
 import { createOrder } from './controllers/orderController.js';
 import { createMessage } from './controllers/supportController.js';
 import { 
@@ -14,8 +15,8 @@ import {
   deleteOrder, 
   getStock, 
   updateStock,
-  createProduct,  // <--- NEU: Komma wichtig!
-  getAllProducts  // <--- NEU
+  createProduct,   // <--- Komma wichtig!
+  getAllProducts   // <--- Komma wichtig!
 } from './controllers/adminController.js';
 
 dotenv.config();
@@ -47,19 +48,20 @@ app.use(cors({
 
 app.use(express.json());
 
+// Datenbank Verbindung
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Error:', err));
 
-// --- ROUTEN ---
+// --- ÖFFENTLICHE ROUTEN ---
 app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
 
-// NEU: Produkte laden (für den Shop)
+// Route damit der Shop Produkte laden kann
 app.get('/api/products', getAllProducts);
 
-// ADMIN ROUTEN
+// --- ADMIN ROUTEN ---
 app.get('/api/admin/orders', checkAdmin, getOrders);
 app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus);
 app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder);
@@ -70,7 +72,7 @@ app.delete('/api/admin/messages/:id', checkAdmin, deleteMessage);
 app.get('/api/admin/stock', checkAdmin, getStock);
 app.post('/api/admin/stock', checkAdmin, updateStock);
 
-// NEU: Produkt erstellen
+// Route zum Erstellen neuer Produkte
 app.post('/api/admin/products', checkAdmin, createProduct);
 
 // SERVER START
