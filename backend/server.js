@@ -14,9 +14,9 @@ import {
   deleteMessage, 
   deleteOrder, 
   getStock, 
-  updateStock,      // <--- WICHTIG: Hier muss ein Komma sein!
-  createProduct,    // NEU
-  getAllProducts    // NEU
+  updateStock,
+  createProduct,   // <--- NEU
+  getAllProducts   // <--- NEU
 } from './controllers/adminController.js';
 
 dotenv.config();
@@ -24,24 +24,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. CORS Einstellungen (Optimiert für Vercel & Eigene Domain)
+// CORS
 const allowedOrigins = [
   'http://localhost:3000',
-  'http://localhost:4321', // Astro Standard Port
+  'http://localhost:4321', 
   'https://jonastest-orpin.vercel.app',
-  /\.vercel\.app$/ // Erlaubt alle Vercel-Subdomains dieses Projekts
+  /\.vercel\.app$/ 
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Erlaubt Anfragen ohne Origin (wie Postman oder mobile Apps)
     if (!origin) return callback(null, true);
-    
     const isAllowed = allowedOrigins.some(allowed => {
       if (allowed instanceof RegExp) return allowed.test(origin);
       return allowed === origin;
     });
-
     if (isAllowed) {
       callback(null, true);
     } else {
@@ -54,7 +51,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Datenbank Verbindung
+// DB Verbindung
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Error:', err));
@@ -64,11 +61,10 @@ app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
 
-// NEU: Produkte für den Shop abrufen
+// NEU: Alle Produkte laden (für den Shop)
 app.get('/api/products', getAllProducts);
 
-// --- BESTANDS-ROUTE ---
-// (Kann entfernt werden, wenn getAllProducts genutzt wird, aber wir lassen es zur Sicherheit drin)
+// Alte Stock-Route (optional behalten)
 app.get('/api/stock', async (req, res) => {
   try {
     const Product = (await import('./models/Product.js')).default;
@@ -79,7 +75,7 @@ app.get('/api/stock', async (req, res) => {
   }
 });
 
-// --- ADMIN ROUTES ---
+// --- ADMIN ROUTEN ---
 app.get('/api/admin/orders', checkAdmin, getOrders);
 app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus);
 app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder);
@@ -93,7 +89,7 @@ app.post('/api/admin/stock', checkAdmin, updateStock);
 // NEU: Produkt erstellen
 app.post('/api/admin/products', checkAdmin, createProduct);
 
-// --- SERVER START ---
+// START
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server läuft auf Port ${PORT}`);
 });

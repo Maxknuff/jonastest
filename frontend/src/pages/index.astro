@@ -1,16 +1,14 @@
 ---
-// 1. ZUERST ALLE IMPORTS
 import '../styles.css';
 import Header from '../components/Header.jsx';
 import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
 import SupportOverlay from '../components/SupportOverlay.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
 
-// DYNAMISCH LADEN:
-// Wir fragen das Backend nach der aktuellen Produktliste
+// DYNAMISCHES LADEN
 let shopProducts = [];
 try {
-  // Entscheide URL je nach Umgebung (Build vs Dev)
+  // API URL bestimmen (Lokal vs Live)
   const API_URL = import.meta.env.MODE === 'development' 
     ? 'http://localhost:5000' 
     : 'https://jonastest.onrender.com';
@@ -22,16 +20,19 @@ try {
     console.error("Fehler beim Laden der Produkte");
   }
 } catch (error) {
-  console.error("API nicht erreichbar:", error);
-  // Fallback, falls Server down ist
+  console.error("API nicht erreichbar, nutze Fallback");
+}
+
+// Fallback, falls Datenbank leer oder Server down
+if (shopProducts.length === 0) {
   shopProducts = [
-      { id: "VAPE12K", name: "RANDM TORNADO 12000", price: 59.90, image: "/products/VAPE12K.png", description: "Bestseller (Offline-Modus)" }
+    { id: "VAPE12K", name: "RANDM TORNADO 12000 (Demo)", price: 59.90, image: "/products/VAPE12K.png", description: "Backend noch nicht verbunden." }
   ];
 }
 ---
 
 <html lang="de">
-  ...
+...
   <ProductGrid client:only="react" products={shopProducts} />
   ...
 
