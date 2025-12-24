@@ -1,13 +1,16 @@
 ---
+// 1. CSS und Funktionen laden
 import '../../styles.css'; 
-
-import Header from '../../components/Header.jsx';
-import CheckoutOverlay from '../../components/CheckoutOverlay.jsx';
-import SupportOverlay from '../../components/SupportOverlay.jsx';
-import AddToCartButton from '../../components/AddToCartButton.jsx'; // NEU
 import { products } from '../../products.js'; 
 import { ArrowLeft, ShieldCheck, Truck } from 'lucide-react';
 
+// 2. Komponenten importieren
+import Header from '../../components/Header.jsx';
+import CheckoutOverlay from '../../components/CheckoutOverlay.jsx';
+import SupportOverlay from '../../components/SupportOverlay.jsx';
+import AddToCartButton from '../../components/AddToCartButton.jsx';
+
+// 3. Dynamische Pfade generieren (für Astro Build)
 export function getStaticPaths() {
   return products.map(product => ({
     params: { id: product.id },
@@ -18,12 +21,6 @@ export function getStaticPaths() {
 const { product } = Astro.props;
 ---
 
----
-// Beispiel in deiner index.astro oder checkout.astro
----
-<Header client:only="react" />
-<CheckoutPage client:only="react" />
-
 <html lang="de">
   <head>
     <meta charset="utf-8" />
@@ -32,7 +29,7 @@ const { product } = Astro.props;
   </head>
   <body class="bg-[#F5F5F7] text-[#1D1D1F]">
     
-    <Header client:load />
+    <Header client:only="react" />
 
     <main class="pt-32 pb-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       
@@ -74,8 +71,8 @@ const { product } = Astro.props;
               </div>
             </div>
 
-            {/* REACT BUTTON DER LIVE AUF STOCK PRÜFT */}
-            <AddToCartButton client:load product={product} />
+            {/* Der Button prüft live den Bestand im Backend */}
+            <AddToCartButton client:only="react" product={product} />
           </div>
 
         </div>
@@ -83,8 +80,8 @@ const { product } = Astro.props;
 
     </main>
 
-    <CheckoutOverlay client:load />
-    <SupportOverlay client:load />
+    <CheckoutOverlay client:only="react" />
+    <SupportOverlay client:only="react" />
 
   </body>
 </html>

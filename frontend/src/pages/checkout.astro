@@ -1,13 +1,14 @@
 ---
+// 1. CSS laden
 import '../styles.css';
-import CheckoutPage from '../components/CheckoutPage.jsx';
----
 
+// 2. Komponenten importieren
+import CheckoutPage from '../components/CheckoutPage.jsx';
+
+// Hinweis: Falls du den Header auch auf der Checkout-Seite willst, 
+// musst du ihn hier ebenfalls importieren:
+// import Header from '../components/Header.jsx';
 ---
-// Beispiel in deiner index.astro oder checkout.astro
----
-<Header client:only="react" />
-<CheckoutPage client:only="react" />
 
 <html lang="de">
   <head>

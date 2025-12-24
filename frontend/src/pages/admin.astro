@@ -1,13 +1,10 @@
 ---
+// 1. Styles importieren
 import '../styles.css';
+
+// 2. Admin-Komponente importieren
 import AdminDashboard from '../components/AdminDashboard.jsx';
 ---
-
----
-// Beispiel in deiner index.astro oder checkout.astro
----
-<Header client:only="react" />
-<CheckoutPage client:only="react" />
 
 <html lang="de">
   <head>
@@ -15,7 +12,9 @@ import AdminDashboard from '../components/AdminDashboard.jsx';
     <meta name="viewport" content="width=device-width" />
     <title>Admin | SECURE.</title>
   </head>
-  <body>
+  <body class="bg-[#F5F5F7]">
+    
     <AdminDashboard client:only="react" />
+
   </body>
 </html>
