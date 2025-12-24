@@ -14,10 +14,9 @@ import {
   deleteMessage, 
   deleteOrder, 
   getStock, 
-  updateStock 
-  createProduct,  // NEU
-  getAllProducts
-
+  updateStock,      // <--- WICHTIG: Hier muss ein Komma sein!
+  createProduct,    // NEU
+  getAllProducts    // NEU
 } from './controllers/adminController.js';
 
 dotenv.config();
@@ -64,9 +63,12 @@ mongoose.connect(process.env.MONGO_URI)
 app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
+
+// NEU: Produkte für den Shop abrufen
 app.get('/api/products', getAllProducts);
 
 // --- BESTANDS-ROUTE ---
+// (Kann entfernt werden, wenn getAllProducts genutzt wird, aber wir lassen es zur Sicherheit drin)
 app.get('/api/stock', async (req, res) => {
   try {
     const Product = (await import('./models/Product.js')).default;
@@ -81,15 +83,17 @@ app.get('/api/stock', async (req, res) => {
 app.get('/api/admin/orders', checkAdmin, getOrders);
 app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus);
 app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder);
-app.post('/api/admin/products', checkAdmin, createProduct);
+
 app.get('/api/admin/messages', checkAdmin, getMessages);
 app.delete('/api/admin/messages/:id', checkAdmin, deleteMessage);
 
 app.get('/api/admin/stock', checkAdmin, getStock);
 app.post('/api/admin/stock', checkAdmin, updateStock);
 
+// NEU: Produkt erstellen
+app.post('/api/admin/products', checkAdmin, createProduct);
+
 // --- SERVER START ---
-// Auf Render ist es wichtig, auf 0.0.0.0 zu binden
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server läuft auf Port ${PORT}`);
 });
