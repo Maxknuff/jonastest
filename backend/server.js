@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-// Controller Imports
 import { createOrder } from './controllers/orderController.js';
 import { createMessage } from './controllers/supportController.js';
 import { 
@@ -15,8 +14,8 @@ import {
   deleteOrder, 
   getStock, 
   updateStock,
-  createProduct,   // <--- NEU
-  getAllProducts   // <--- NEU
+  createProduct,  // <--- NEU: Komma wichtig!
+  getAllProducts  // <--- NEU
 } from './controllers/adminController.js';
 
 dotenv.config();
@@ -24,7 +23,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS
+// CORS Einstellungen
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:4321', 
@@ -39,11 +38,8 @@ app.use(cors({
       if (allowed instanceof RegExp) return allowed.test(origin);
       return allowed === origin;
     });
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS Policy: Diese Origin ist nicht erlaubt.'));
-    }
+    if (isAllowed) callback(null, true);
+    else callback(new Error('CORS Policy: Diese Origin ist nicht erlaubt.'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'x-admin-secret']
@@ -51,31 +47,19 @@ app.use(cors({
 
 app.use(express.json());
 
-// DB Verbindung
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch(err => console.error('❌ MongoDB Error:', err));
 
-// --- ÖFFENTLICHE ROUTEN ---
+// --- ROUTEN ---
 app.get('/', (req, res) => res.send('SECURE. API is running...'));
 app.post('/api/orders', createOrder);
 app.post('/api/support', createMessage);
 
-// NEU: Alle Produkte laden (für den Shop)
+// NEU: Produkte laden (für den Shop)
 app.get('/api/products', getAllProducts);
 
-// Alte Stock-Route (optional behalten)
-app.get('/api/stock', async (req, res) => {
-  try {
-    const Product = (await import('./models/Product.js')).default;
-    const products = await Product.find({}, 'productId stock');
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// --- ADMIN ROUTEN ---
+// ADMIN ROUTEN
 app.get('/api/admin/orders', checkAdmin, getOrders);
 app.put('/api/admin/orders/:id', checkAdmin, updateOrderStatus);
 app.delete('/api/admin/orders/:id', checkAdmin, deleteOrder);
@@ -89,7 +73,7 @@ app.post('/api/admin/stock', checkAdmin, updateStock);
 // NEU: Produkt erstellen
 app.post('/api/admin/products', checkAdmin, createProduct);
 
-// START
+// SERVER START
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server läuft auf Port ${PORT}`);
 });
