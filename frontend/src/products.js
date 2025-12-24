@@ -5,14 +5,14 @@ export const products = [
   { 
     id: "VAPE12K", 
     name: "RANDM TORNADO 12000", 
-    price: 59.90, 
+    price: 10.00, 
     image: "/products/VAPE12K.png",
     description: "Der Bestseller mit 12.000 Zügen. Intensiver Geschmack und lange Akkulaufzeit."
   },
   { 
     id: "VAPE15K", 
     name: "RANDM TORNADO 15000", 
-    price: 29.90, 
+    price: 15., 
     image: "/products/VAPE15K.png",
     description: "Das Upgrade für Profis. 15.000 Züge und einstellbarer Airflow für maximalen Dampf."
   },
