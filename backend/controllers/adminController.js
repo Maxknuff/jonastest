@@ -18,21 +18,29 @@ export const deleteOrder = async (req, res) => { try { await Order.findByIdAndDe
 export const getStock = async (req, res) => { try { const d = await Product.find(); res.json(d); } catch(e){ res.status(500).json({message:e.message}); } };
 
 // FIX: upsert entfernt! Erstellt keine Geister-Produkte mehr.
+// backend/controllers/adminController.js
+
 export const updateStock = async (req, res) => { 
   try { 
     const {productId, stock} = req.body; 
+    
+    // WICHTIG: upsert wurde entfernt! 
+    // new: true bedeutet nur, dass wir den neuen Wert zurückbekommen wollen.
     const p = await Product.findOneAndUpdate(
-      {productId}, 
-      {stock, lastUpdate: Date.now()}, 
-      {new:true} // WICHTIG: upsert:true gelöscht
+      { productId }, 
+      { stock, lastUpdate: Date.now() }, 
+      { new: true } 
     ); 
-    if (!p) return res.status(404).json({message: "Produkt nicht gefunden. Bitte erst erstellen!"});
-    res.json({success:true, product:p}); 
+
+    if (!p) {
+      return res.status(404).json({ message: "Produkt nicht gefunden. Bitte erst erstellen!" });
+    }
+
+    res.json({ success: true, product: p }); 
   } catch(e){ 
-    res.status(500).json({message:e.message}); 
+    res.status(500).json({ message: e.message }); 
   } 
 };
-
 export const createProduct = async (req, res) => {
   try {
     const { productId, name, price, image, description, stock } = req.body;
