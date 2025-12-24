@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Package, MessageSquare, Check, Truck, XCircle, Trash2, Mail, Lock, Database, ShoppingCart } from 'lucide-react';
+import { Package, MessageSquare, Check, Truck, Trash2, Lock, ShoppingCart } from 'lucide-react';
+
+// --- FEHLERRESISTENTE URL-LOGIK ---
+const getApiUrl = () => {
+  if (typeof window !== "undefined" && window.location) {
+    // Falls die URL 'vercel.app' oder deine eigene Domain enthält
+    if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
+      return "https://jonastest.onrender.com";
+    }
+  }
+  return 'http://localhost:5000';
+};
+
+const API_URL = getApiUrl();
 
 export default function AdminDashboard() {
   const [password, setPassword] = useState('');
@@ -22,7 +35,8 @@ export default function AdminDashboard() {
       if (activeTab === 'messages') endpoint = '/api/admin/messages';
       if (activeTab === 'stock') endpoint = '/api/admin/stock';
       
-      const res = await axios.get(`http://localhost:5000${endpoint}`, {
+      // KORREKTUR: Nutzt jetzt API_URL
+      const res = await axios.get(`${API_URL}${endpoint}`, {
         headers: { 'x-admin-secret': pwd }
       });
 
@@ -33,6 +47,8 @@ export default function AdminDashboard() {
       if (err.response?.status === 403) {
         alert("Passwort falsch.");
         setIsAuth(false);
+      } else {
+        alert("Server nicht erreichbar. Prüfe die API_URL.");
       }
     } finally {
       setLoading(false);
@@ -46,10 +62,12 @@ export default function AdminDashboard() {
 
   const handleUpdateStock = async (productId, stock) => {
     try {
-      await axios.post(`http://localhost:5000/api/admin/stock`, 
+      // KORREKTUR: Nutzt jetzt API_URL
+      await axios.post(`${API_URL}/api/admin/stock`, 
         { productId, stock: parseInt(stock) },
         { headers: { 'x-admin-secret': password } }
       );
+      alert("Bestand aktualisiert!");
     } catch (err) {
       alert("Fehler beim Speichern des Bestands.");
     }
@@ -57,7 +75,8 @@ export default function AdminDashboard() {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/admin/orders/${id}`, { status: newStatus }, { headers: { 'x-admin-secret': password } });
+      // KORREKTUR: Nutzt jetzt API_URL
+      await axios.put(`${API_URL}/api/admin/orders/${id}`, { status: newStatus }, { headers: { 'x-admin-secret': password } });
       fetchData(password);
     } catch (err) { alert("Fehler beim Update."); }
   };
@@ -65,7 +84,8 @@ export default function AdminDashboard() {
   const deleteOrder = async (id) => {
     if (!window.confirm("Löschen?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/orders/${id}`, { headers: { 'x-admin-secret': password } });
+      // KORREKTUR: Nutzt jetzt API_URL
+      await axios.delete(`${API_URL}/api/admin/orders/${id}`, { headers: { 'x-admin-secret': password } });
       fetchData(password);
     } catch (err) { alert("Fehler."); }
   };
@@ -73,7 +93,8 @@ export default function AdminDashboard() {
   const deleteMsg = async (id) => {
     if (!window.confirm("Löschen?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/admin/messages/${id}`, { headers: { 'x-admin-secret': password } });
+      // KORREKTUR: Nutzt jetzt API_URL
+      await axios.delete(`${API_URL}/api/admin/messages/${id}`, { headers: { 'x-admin-secret': password } });
       fetchData(password);
     } catch (err) { alert("Fehler."); }
   };
@@ -89,7 +110,7 @@ export default function AdminDashboard() {
           <Lock size={32} className="mx-auto mb-6" />
           <h1 className="text-3xl font-black mb-6">ADMIN LOGIN</h1>
           <input type="password" placeholder="Security Key" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-4 bg-gray-50 border-2 border-transparent focus:border-black rounded-2xl mb-4 text-center outline-none" />
-          <button className="w-full bg-black text-white py-4 rounded-2xl font-bold">Unlock</button>
+          <button className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all">Unlock</button>
         </form>
       </div>
     );
@@ -109,11 +130,10 @@ export default function AdminDashboard() {
         </div>
 
         <div className="space-y-6">
-          {loading && <div className="text-center py-10 animate-pulse text-gray-400">Lade...</div>}
+          {loading && <div className="text-center py-10 animate-pulse text-gray-400">Verbinde mit Server...</div>}
           
-          {/* ORDERS TAB */}
           {activeTab === 'orders' && !loading && data.map(order => (
-            <div key={order._id} className="bg-white p-8 rounded-[28px] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start gap-8 animate-in fade-in">
+            <div key={order._id} className="bg-white p-8 rounded-[28px] shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start gap-8">
                <div className="flex-1 w-full">
                   <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-4 inline-block ${
                     order.status === 'pending' ? 'bg-orange-100 text-orange-600' : 
@@ -122,9 +142,8 @@ export default function AdminDashboard() {
                     {order.status}
                   </span>
                   <h3 className="font-bold text-2xl">{order.firstName} {order.lastName}</h3>
-                  <p className="text-gray-400 mb-4">{order.address.street}, {order.address.zip} {order.address.city}</p>
+                  <p className="text-gray-400 mb-4">{order.address?.street}, {order.address?.zip} {order.address?.city}</p>
                   
-                  {/* PRODUKTLISTE ANZEIGEN */}
                   <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                     <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                       <ShoppingCart size={12} /> Artikel
@@ -153,14 +172,13 @@ export default function AdminDashboard() {
             </div>
           ))}
 
-          {/* ... MESSAGES & STOCK TABS BLEIBEN GLEICH ... */}
           {activeTab === 'messages' && !loading && data.map(msg => (
             <div key={msg._id} className="bg-white p-8 rounded-[28px] border border-gray-100">
               <div className="flex justify-between mb-4">
                 <h3 className="font-bold text-xl">{msg.email}</h3>
-                <button onClick={() => deleteMsg(msg._id)} className="text-red-400"><Trash2 size={20}/></button>
+                <button onClick={() => deleteMsg(msg._id)} className="text-red-400 hover:text-red-600"><Trash2 size={20}/></button>
               </div>
-              <p className="bg-gray-50 p-4 rounded-xl">{msg.message}</p>
+              <p className="bg-gray-50 p-4 rounded-xl text-gray-700">{msg.message}</p>
             </div>
           ))}
 
@@ -192,7 +210,7 @@ export default function AdminDashboard() {
           )}
 
           {!loading && data.length === 0 && activeTab !== 'stock' && (
-             <div className="text-center py-20 text-gray-400 font-bold">Keine Einträge gefunden.</div>
+             <div className="text-center py-20 text-gray-400 font-bold">Keine Einträge in der Datenbank gefunden.</div>
           )}
         </div>
       </div>
