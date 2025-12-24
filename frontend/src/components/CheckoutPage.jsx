@@ -5,7 +5,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Truck, Banknote, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 
-// --- FEHLERRESISTENTE URL-LOGIK (Identisch mit store.js) ---
+// --- FEHLERRESISTENTE URL-LOGIK ---
 const getApiUrl = () => {
   if (typeof window !== "undefined" && window.location) {
     if (window.location.hostname.includes("vercel.app") || window.location.hostname.includes("jonastest")) {
@@ -51,7 +51,6 @@ export default function CheckoutPage() {
       const payload = {
         paymentMethod: method,
         firstName: formData.firstName,
-        // Bei ONSITE wird kein Nachname gesendet, wir senden einen leeren String oder den Vornamen als Fallback
         lastName: method === 'ONSITE' ? '' : formData.lastName,
         email: formData.email,
         phone: formData.phone,
@@ -124,7 +123,7 @@ export default function CheckoutPage() {
               method === 'ONSITE' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <Banknote size={18} /> Barzahlung
+            <Banknote size={18} /> Barzahlung nur Neumünster
           </button>
           <button
              type="button"
@@ -133,7 +132,7 @@ export default function CheckoutPage() {
               method === 'ONLINE' ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <Truck size={18} /> Versand
+            <Truck size={18} /> Versand via Post
           </button>
         </div>
 
@@ -141,7 +140,6 @@ export default function CheckoutPage() {
           <div>
             <h3 className="text-lg font-bold mb-4 text-[#1d1d1f]">Deine Daten</h3>
             <div className="grid grid-cols-2 gap-4">
-              {/* ÄNDERUNG: Name/Vorname Logik */}
               <input 
                 required 
                 name="firstName" 
@@ -150,7 +148,6 @@ export default function CheckoutPage() {
                 className={`bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none ${method === 'ONSITE' ? 'col-span-2 w-full' : 'w-full'}`} 
               />
               
-              {/* ÄNDERUNG: Nachname nur bei ONLINE sichtbar */}
               {method === 'ONLINE' && (
                 <input 
                   name="lastName" 
@@ -170,15 +167,14 @@ export default function CheckoutPage() {
               </motion.div>
             ) : (
               <motion.div key="onsite-contact" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-4">
-                 <div className="bg-blue-50 text-[#0071E3] p-4 rounded-xl text-sm font-medium">📍 Zahle sicher & anonym bei Übergabe.</div>
-                 {/* ÄNDERUNG: Placeholder Text angepasst */}
+                 {/* HIER IST DIE ÄNDERUNG: */}
+                 <div className="bg-blue-50 text-[#0071E3] p-4 rounded-xl text-sm font-medium">📍 Nur für lieferungen in Neumünster</div>
                  <input type="tel" name="phone" required placeholder="Handynummer/ andere kontakt möglichkeit" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
               </motion.div>
             )}
           </AnimatePresence>
 
           <div>
-            {/* ÄNDERUNG: Immer "Lieferadresse" anzeigen */}
             <h3 className="text-lg font-bold mb-4 mt-6 text-[#1d1d1f]">Lieferadresse</h3>
             <div className="space-y-4">
               <input name="street" required placeholder="Straße & Hausnummer" onChange={handleChange} className="w-full bg-gray-50 border-0 rounded-xl p-4 focus:ring-2 focus:ring-[#0071E3] focus:bg-white transition outline-none" />
