@@ -1,7 +1,7 @@
 ---
 // 1. CSS und Funktionen laden
 import '../../styles.css'; 
-import { products } from '../../products.js'; 
+import { products as fallbackProducts } from '../../products.js';
 import { ArrowLeft, ShieldCheck, Truck } from 'lucide-react';
 
 // 2. Komponenten importieren
@@ -10,15 +10,44 @@ import CheckoutOverlay from '../../components/CheckoutOverlay.jsx';
 import SupportOverlay from '../../components/SupportOverlay.jsx';
 import AddToCartButton from '../../components/AddToCartButton.jsx';
 
-// 3. Dynamische Pfade generieren (für Astro Build)
-export function getStaticPaths() {
-  return products.map(product => ({
-    params: { id: product.id },
-    props: { product },
-  }));
+// WICHTIG: getStaticPaths wurde ENTFERNT! Vercel generiert die Seite jetzt live.
+
+// 3. ID aus der URL holen
+const { id } = Astro.params;
+
+let product = null;
+
+// 4. API URL bestimmen
+// Auf Vercel ist import.meta.env.DEV false, also nutzen wir die Render-URL
+const API_URL = import.meta.env.DEV 
+  ? 'http://localhost:5000' 
+  : 'https://jonastest.onrender.com';
+
+// 5. Versuch: Produkt live von Render laden
+try {
+  // Timeout von 4 Sekunden, falls Render schläft
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4000); 
+
+  const res = await fetch(`${API_URL}/api/products/${id}`, { signal: controller.signal });
+  clearTimeout(timeoutId);
+
+  if (res.ok) {
+    product = await res.json();
+  }
+} catch (err) {
+  console.error("API Fehler (Render könnte schlafen):", err);
 }
 
-const { product } = Astro.props;
+// 6. Fallback: Wenn Render nicht antwortet, suche in der statischen Datei
+if (!product) {
+  product = fallbackProducts.find(p => p.id === id);
+}
+
+// 7. Wenn immer noch nichts gefunden -> 404 Seite
+if (!product) {
+  return Astro.redirect('/404');
+}
 ---
 
 <html lang="de">
@@ -39,10 +68,10 @@ const { product } = Astro.props;
 
       <div class="bg-white rounded-[30px] p-8 md:p-12 shadow-sm border border-gray-100">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-center">
-          
+      
           <div class="relative bg-gray-50 rounded-2xl p-8 flex items-center justify-center aspect-square group overflow-hidden">
              <img 
-               src={product.image} 
+               src={product.image || '/products/VAPE12K.png'} 
                alt={product.name} 
                class="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-500 drop-shadow-xl"
              />
@@ -53,11 +82,11 @@ const { product } = Astro.props;
             <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[#1D1D1F]">{product.name}</h1>
             
             <div class="text-3xl font-medium text-[#1D1D1F] mb-8">
-              {product.price.toFixed(2)}€
+               {Number(product.price).toFixed(2)}€
             </div>
 
             <p class="text-gray-500 text-lg leading-relaxed mb-8 border-b border-gray-100 pb-8">
-              {product.description}
+              {product.description || "Keine Beschreibung verfügbar."}
             </p>
 
             <div class="space-y-3 mb-8">
@@ -71,7 +100,7 @@ const { product } = Astro.props;
               </div>
             </div>
 
-            {/* Der Button prüft live den Bestand im Backend */}
+            {/* Der Button prüft live den Bestand */}
             <AddToCartButton client:only="react" product={product} />
           </div>
 
