@@ -89,3 +89,49 @@ export const updateStock = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// NEU: Produkt erstellen
+export const createProduct = async (req, res) => {
+  try {
+    const { productId, name, price, image, description, stock } = req.body;
+
+    // Prüfen ob ID schon existiert
+    const existing = await Product.findOne({ productId });
+    if (existing) {
+      return res.status(400).json({ message: 'Produkt-ID existiert bereits!' });
+    }
+
+    const newProduct = new Product({
+      productId,
+      name,
+      price: parseFloat(price),
+      image,
+      description,
+      stock: parseInt(stock) || 0
+    });
+
+    await newProduct.save();
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// NEU: Alle Produkte für den Shop abrufen (Öffentlich)
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find({});
+    // Wir mappen die Daten so, wie das Frontend sie braucht (id statt productId)
+    const formatted = products.map(p => ({
+      id: p.productId,
+      name: p.name,
+      price: p.price,
+      image: p.image,
+      description: p.description,
+      stock: p.stock
+    }));
+    res.json(formatted);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
