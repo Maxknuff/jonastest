@@ -6,22 +6,20 @@ import ProductCard from './ProductCard';
 export default function ProductGrid({ products }) {
   const query = useStore(searchQuery);
 
+  // Sicherheits-Check, falls products undefined ist
+  if (!products) return null;
+
   // Live Filter-Logik
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 min-h-[400px]">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[400px]">
       {filteredProducts.length > 0 ? (
         filteredProducts.map((product) => (
-          <ProductCard 
-            key={product.id}
-            id={product.id} 
-            name={product.name} 
-            price={product.price} 
-            image={product.image} 
-          />
+          // WICHTIG: Hier übergeben wir das GANZE Produkt-Objekt
+          <ProductCard key={product.id} product={product} />
         ))
       ) : (
         <div className="col-span-full text-center py-20 text-gray-400">
