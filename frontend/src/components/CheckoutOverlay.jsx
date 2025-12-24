@@ -1,8 +1,9 @@
 import React from 'react';
 import { useStore } from '@nanostores/react';
-import { isCartOpen, cartItems, removeCartItem, updateCartItemQuantity } from '../store';
+// KORREKTUR 1: Hier heißt es jetzt updateCartQuantity (passend zur store.js)
+import { isCartOpen, cartItems, removeCartItem, updateCartQuantity } from '../store';
 import { motion, AnimatePresence } from 'framer-motion';
-// FEHLER-FIX: ShoppingBag hier importieren!
+// KORREKTUR 2: ShoppingBag hinzugefügt
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 
 export default function CheckoutOverlay() {
@@ -57,18 +58,27 @@ export default function CheckoutOverlay() {
                     <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shrink-0">
                       <img src={item.image} alt={item.name} className="max-w-full max-h-full p-2 object-contain" />
                     </div>
+                    
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
                         <h3 className="font-bold text-sm text-[#1d1d1f] line-clamp-1">{item.name}</h3>
                         <p className="text-gray-500 text-xs mt-1">{item.price.toFixed(2)}€ / Stück</p>
                       </div>
+                      
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center gap-3 bg-white rounded-lg px-2 py-1 shadow-sm border border-gray-100">
-                          <button onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)} className="p-1 hover:text-[#0071E3] transition"><Minus size={14} /></button>
+                          {/* KORREKTUR 3: Hier nutzen wir jetzt updateCartQuantity */}
+                          <button onClick={() => updateCartQuantity(item.id, item.quantity - 1)} className="p-1 hover:text-[#0071E3] transition">
+                            <Minus size={14} />
+                          </button>
                           <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
-                          <button onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)} className="p-1 hover:text-[#0071E3] transition"><Plus size={14} /></button>
+                          <button onClick={() => updateCartQuantity(item.id, item.quantity + 1)} className="p-1 hover:text-[#0071E3] transition">
+                            <Plus size={14} />
+                          </button>
                         </div>
-                        <button onClick={() => removeCartItem(item.id)} className="text-gray-400 hover:text-red-500 transition"><Trash2 size={18} /></button>
+                        <button onClick={() => removeCartItem(item.id)} className="text-gray-400 hover:text-red-500 transition">
+                          <Trash2 size={18} />
+                        </button>
                       </div>
                     </div>
                   </motion.div>
