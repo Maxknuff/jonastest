@@ -1,22 +1,13 @@
 ---
-// CSS laden
+// 1. ZUERST ALLE IMPORTS
 import '../styles.css';
-
----
-// Beispiel in deiner index.astro oder checkout.astro
----
-<Header client:only="react" />
-<CheckoutPage client:only="react" />
-
-// Komponenten importieren
-import Header from '../components/Header.jsx';          // NEU
+import Header from '../components/Header.jsx';
 import CheckoutOverlay from '../components/CheckoutOverlay.jsx';
 import SupportOverlay from '../components/SupportOverlay.jsx';
 import ProductGrid from '../components/ProductGrid.jsx';
-import { products } from '../products.js';
 
-// Datenquelle
-const products = [
+// 2. DATEN DEFINIEREN
+const shopProducts = [
   { id: "VAPE12K", name: "RANDM TORNADO 12000", price: 59.90, image: "/products/VAPE12K.png" },
   { id: "VAPE15K", name: "RANDM TORNADO 15000", price: 29.90, image: "/products/VAPE15K.png" },
   { id: "prod_hardware_wallet", name: "Cold Storage Stick", price: 149.00, image: "/products/stick.png" },
@@ -31,7 +22,7 @@ const products = [
   </head>
   <body class="bg-[#F5F5F7] text-[#1D1D1F]">
     
-    <Header client:load />
+    <Header client:only="react" />
 
     <main class="pt-32 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
@@ -50,12 +41,12 @@ const products = [
         <h2 class="text-3xl font-bold tracking-tight">Shop</h2>
       </div>
       
-      <ProductGrid client:load products={products} />
+      <ProductGrid client:only="react" products={shopProducts} />
 
     </main>
 
-    <CheckoutOverlay client:load />
-    <SupportOverlay client:load />
+    <CheckoutOverlay client:only="react" />
+    <SupportOverlay client:only="react" />
 
   </body>
 </html>
